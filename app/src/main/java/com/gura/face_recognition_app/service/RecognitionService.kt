@@ -6,7 +6,7 @@ import android.os.Build
 import android.util.Log
 import androidx.annotation.RequiresApi
 import com.gura.face_recognition_app.api.RecognitionAPI
-import com.gura.face_recognition_app.api.RetrofitHelper
+import com.gura.face_recognition_app.helper.MLRetrofitHelper
 import com.gura.face_recognition_app.model.FaceRecognitionRequest
 import com.gura.face_recognition_app.model.FaceRecognitionResponse
 import com.gura.face_recognition_app.model.ServerStatus
@@ -25,16 +25,16 @@ class RecognitionService(context: Context) {
         fun onCompleted(faceRecognitionResponse: FaceRecognitionResponse)
     }
 
-    interface ServerInterface {
+    interface CheckServerStatusInterface {
         fun onConnected()
         fun onDisconnected(msg: String)
     }
 
-    private val api = RetrofitHelper.getInstance(context).create(RecognitionAPI::class.java)
+    private val api = MLRetrofitHelper.getInstance(context).create(RecognitionAPI::class.java)
 
-    fun startFaceRecognition(base64: String, cameraSide: String, listener: RecognitionInterface) {
+    fun startFaceRecognition(base64: String, listener: RecognitionInterface) {
 
-        val faceRecognitionRequest = FaceRecognitionRequest(base64,cameraSide)
+        val faceRecognitionRequest = FaceRecognitionRequest(base64)
         val status = api.startFaceRecognition(faceRecognitionRequest)
 
         status!!.enqueue(object : Callback<FaceRecognitionResponse> {
@@ -60,7 +60,7 @@ class RecognitionService(context: Context) {
         }
     }
 
-    fun checkServerStatus(listener: ServerInterface){
+    fun checkServerStatus(listener: CheckServerStatusInterface){
         GlobalScope.launch {
             val status = api.checkServerStatus()
             status.enqueue(object: Callback<ServerStatus>{

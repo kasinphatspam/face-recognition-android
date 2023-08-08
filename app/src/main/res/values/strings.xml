@@ -1,6 +1,7 @@
 <resources>
     <string name="app_name">face-recognition-app</string>
-    <string name="server_ip">192.168.2.37:3000</string>
-    <!-- TODO: Remove or change this placeholder text -->
+    <string name="backend_server_ip">192.168.0.210:3001</string>
+    <string name="ml_server_ip">192.168.0.210:3002</string>
     <string name="hello_blank_fragment">Hello blank fragment</string>
+    <string name="preference_file_key">private_preferences</string>
 </resources>

@@ -6,12 +6,18 @@ import android.view.View
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
+import androidx.core.content.edit
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.add
 import androidx.fragment.app.commit
 import com.gura.face_recognition_app.fragment.ContactFragment
 import com.gura.face_recognition_app.fragment.DashboardFragment
+import com.gura.face_recognition_app.helper.SharePreferencesHelper
+import com.gura.face_recognition_app.model.UserInformationResponse
+import com.gura.face_recognition_app.service.AuthService
+import com.gura.face_recognition_app.service.UserService
 import me.ibrahimsn.lib.SmoothBottomBar
+import retrofit2.Response
 
 
 class MainActivity : AppCompatActivity() {
@@ -39,7 +45,6 @@ class MainActivity : AppCompatActivity() {
                 replaceFragment(ContactFragment())
             }
         }
-
         bottomBar.onItemReselected = {
         }
 

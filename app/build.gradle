@@ -5,12 +5,12 @@ plugins {
 
 android {
     namespace 'com.gura.face_recognition_app'
-    compileSdk 33
+    compileSdk 34
 
     defaultConfig {
         applicationId "com.gura.face_recognition_app"
         minSdk 24
-        targetSdk 33
+        targetSdk 34
         versionCode 1
         versionName "1.0"
 
@@ -33,15 +33,38 @@ android {
 }
 
 dependencies {
-    def camerax_version = "1.0.0-beta07"
-    def fragment_version = "1.5.7"
-    implementation 'androidx.core:core-ktx:1.8.0'
-    implementation 'org.jetbrains.kotlinx:kotlinx-coroutines-android:1.3.9'
-    implementation 'androidx.appcompat:appcompat:1.4.1'
-    implementation 'com.google.android.material:material:1.5.0'
-    implementation 'androidx.constraintlayout:constraintlayout:2.1.3'
+    def camerax_version = '1.3.0-beta01'
+    def fragment_version = '1.6.0'
+    /*--------------------  Android Library  -------------------*/
+    implementation 'androidx.core:core-ktx:1.10.1'
+    implementation 'org.jetbrains.kotlinx:kotlinx-coroutines-android:1.7.3'
+    implementation 'androidx.appcompat:appcompat:1.6.1'
+    implementation 'com.google.android.material:material:1.11.0-alpha01'
+    implementation 'androidx.constraintlayout:constraintlayout:2.1.4'
+    /*-----------------  Data Transfer Library  ----------------*/
+    // HTTP (OKHTTP3, Retrofit) and Websocket (Java Websocket Client)
+    implementation('com.squareup.okhttp3:okhttp:5.0.0-alpha.11')
+    implementation 'tech.gusavila92:java-android-websocket-client:1.2.2'
+    implementation 'com.squareup.retrofit2:retrofit:2.9.0'
+    implementation 'com.squareup.retrofit2:converter-gson:2.9.0'
+
+    // Share Preferences (used to create and access file containing a key-value)
+    implementation "androidx.preference:preference-ktx:1.2.0"
+
+    /*---------------  Machine Learning Library  ---------------*/
+    implementation 'com.google.mlkit:face-detection:16.1.5'
+
+    /*--------------------  Camera Library  --------------------*/
+    //noinspection GradleDependency
+    implementation "androidx.camera:camera-view:1.3.0-beta01"
+    //noinspection GradleDependency
+    implementation "androidx.camera:camera-lifecycle:$camerax_version"
+    //noinspection GradleDependency
+    implementation "androidx.camera:camera-camera2:$camerax_version"
+
+    /*--------------------  Layout Library  --------------------*/
     // Custom EditText
-    implementation 'com.github.simformsolutions:SSCustomEditTextOutLineBorder:1.0.15'
+    implementation 'com.google.android.material:material:1.11.0-alpha01'
     // Circular ImageView
     implementation 'de.hdodenhof:circleimageview:3.1.0'
     // Circular Progress Bar
@@ -49,21 +72,15 @@ dependencies {
     // Bottom Navigation Bar
     implementation 'com.github.ibrahimsn98:SmoothBottomBar:1.7.9'
     // Fragment
+    //noinspection GradleDependency
     implementation("androidx.fragment:fragment-ktx:$fragment_version")
     // Custom Camera Button
     implementation 'com.hluhovskyi.camerabutton:camerabutton:2.0.1'
     implementation 'com.hluhovskyi.camerabutton:camerabutton-rxjava2:2.0.1'
     implementation 'com.hluhovskyi.camerabutton:camerabutton-rxjava2-kotlin:2.0.1'
-    // Retrofit (API Connector)
-    implementation 'com.squareup.retrofit2:retrofit:2.6.0'
-    implementation 'com.squareup.retrofit2:converter-gson:2.5.0'
-    // CameraX core library using camera2 implementation
-    implementation "androidx.camera:camera-camera2:$camerax_version"
-    // CameraX Lifecycle Library
-    implementation "androidx.camera:camera-lifecycle:$camerax_version"
-    // CameraX View class
-    implementation "androidx.camera:camera-view:1.0.0-alpha14"
+    /*--------------------  Default Library  -------------------*/
+    implementation fileTree(dir: 'libs', include: ['*.jar'])
     testImplementation 'junit:junit:4.13.2'
-    androidTestImplementation 'androidx.test.ext:junit:1.1.3'
-    androidTestImplementation 'androidx.test.espresso:espresso-core:3.4.0'
+    androidTestImplementation 'androidx.test.ext:junit:1.1.5'
+    androidTestImplementation 'androidx.test.espresso:espresso-core:3.5.1'
 }

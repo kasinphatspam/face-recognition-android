@@ -5,7 +5,7 @@
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:orientation="vertical"
-    android:background="@color/white"
+    android:background="@drawable/bottomsheet_background"
     android:id="@+id/fragment_history_menu_bottom"
     app:layout_behavior="android.support.design.widget.BottomSheetBehavior">
 
@@ -36,7 +36,7 @@
             app:layout_constraintTop_toBottomOf="@+id/cardView7" />
 
         <TextView
-            android:id="@+id/textView5"
+            android:id="@+id/nameTextView"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginStart="24dp"
@@ -49,7 +49,7 @@
             app:layout_constraintTop_toTopOf="@+id/circleImageView5" />
 
         <TextView
-            android:id="@+id/textView18"
+            android:id="@+id/roleTextView"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginStart="24dp"
@@ -57,7 +57,7 @@
             android:text="Manager"
             android:textSize="12sp"
             app:layout_constraintStart_toEndOf="@+id/circleImageView5"
-            app:layout_constraintTop_toBottomOf="@+id/textView5" />
+            app:layout_constraintTop_toBottomOf="@+id/nameTextView" />
 
         <TextView
             android:id="@+id/textView19"
@@ -73,7 +73,7 @@
             app:layout_constraintTop_toBottomOf="@+id/circleImageView5" />
 
         <TextView
-            android:id="@+id/textView20"
+            android:id="@+id/addressTextView"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginStart="24dp"
@@ -88,7 +88,7 @@
             app:layout_constraintTop_toBottomOf="@+id/textView19" />
 
         <TextView
-            android:id="@+id/textView21"
+            android:id="@+id/emailTextView"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginStart="24dp"
@@ -100,10 +100,10 @@
             android:text="kasinphat@gmail.com"
             android:textSize="12sp"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/textView20" />
+            app:layout_constraintTop_toBottomOf="@+id/addressTextView" />
 
         <TextView
-            android:id="@+id/textView22"
+            android:id="@+id/telTextView"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginStart="24dp"
@@ -115,7 +115,7 @@
             android:text="065-324-6900"
             android:textSize="12sp"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/textView21" />
+            app:layout_constraintTop_toBottomOf="@+id/emailTextView" />
 
         <TextView
             android:id="@+id/textView23"
@@ -128,9 +128,10 @@
             android:textColor="@color/black"
             android:textSize="12sp"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/textView22" />
+            app:layout_constraintTop_toBottomOf="@+id/telTextView" />
 
         <TextView
+            android:id="@+id/accuracyTextView"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginStart="24dp"

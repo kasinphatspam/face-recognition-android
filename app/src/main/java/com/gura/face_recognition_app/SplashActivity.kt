@@ -21,16 +21,17 @@ class SplashActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_splash)
 
+        // Initialize helper for customizing display component
         val displayComponentHelper = DisplayComponentHelper(this@SplashActivity, window)
         displayComponentHelper.changeStatusBarColor(R.color.white)
 
-        // view model instance
+        // View Model instance
         viewModel = ViewModelProvider(this)[SplashActivityViewModel::class.java]
-
         handler = Handler(Looper.getMainLooper())
         startRepeatingTask()
     }
 
+    // Create loop for checking preparation of connection
     private var statusChecker: Runnable = object : Runnable {
         @SuppressLint("SetTextI18n")
         override fun run() {
@@ -62,6 +63,7 @@ class SplashActivity : AppCompatActivity() {
                 }
 
             } finally {
+                // Add time delay
                 handler!!.postDelayed(this, mInterval)
             }
         }

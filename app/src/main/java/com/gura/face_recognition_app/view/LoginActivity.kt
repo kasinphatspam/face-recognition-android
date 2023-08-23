@@ -1,4 +1,4 @@
-package com.gura.face_recognition_app
+package com.gura.face_recognition_app.view
 
 import android.content.Intent
 import androidx.appcompat.app.AppCompatActivity
@@ -7,6 +7,9 @@ import android.widget.Button
 import android.widget.EditText
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
+import com.gura.face_recognition_app.MainActivity
+import com.gura.face_recognition_app.R
+import com.gura.face_recognition_app.RegisterActivity
 import com.gura.face_recognition_app.helper.DisplayComponentHelper
 import com.gura.face_recognition_app.model.AuthLoginResponse
 import com.gura.face_recognition_app.service.AuthService
@@ -33,7 +36,7 @@ class LoginActivity : AppCompatActivity() {
         // View Model instance
         viewModel = ViewModelProvider(this)[LoginActivityViewModel::class.java]
 
-        // Initialize the layout with view id
+        // Initialize the layout variable with view id
         emailEditText = findViewById(R.id.emailEditText)
         passwordEditText = findViewById(R.id.passwordEditText)
         loginButton = findViewById(R.id.loginButton)
@@ -49,7 +52,7 @@ class LoginActivity : AppCompatActivity() {
         }
 
         registerButton.setOnClickListener {
-            val intent = Intent(this,RegisterActivity::class.java)
+            val intent = Intent(this, RegisterActivity::class.java)
             startActivity(intent)
         }
 
@@ -58,7 +61,7 @@ class LoginActivity : AppCompatActivity() {
     // Listener when authentication login service is called
     private val listener = object: AuthService.AuthLoginInterface{
         override fun onCompleted(response: Response<AuthLoginResponse>) {
-            val intent = Intent(this@LoginActivity,MainActivity::class.java)
+            val intent = Intent(this@LoginActivity, MainActivity::class.java)
             startActivity(intent)
         }
     }

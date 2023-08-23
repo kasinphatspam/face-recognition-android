@@ -1,4 +1,4 @@
-package com.gura.face_recognition_app
+package com.gura.face_recognition_app.view
 
 import android.annotation.SuppressLint
 import android.content.Intent
@@ -7,6 +7,8 @@ import android.os.Handler
 import android.os.Looper
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.ViewModelProvider
+import com.gura.face_recognition_app.MainActivity
+import com.gura.face_recognition_app.R
 import com.gura.face_recognition_app.helper.DisplayComponentHelper
 import com.gura.face_recognition_app.viewmodel.SplashActivityViewModel
 

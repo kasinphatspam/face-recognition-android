@@ -5,17 +5,16 @@ import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.widget.Button
 import android.widget.EditText
+import android.widget.Toast
+import androidx.appcompat.app.AppCompatDelegate
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
-import com.gura.face_recognition_app.MainActivity
 import com.gura.face_recognition_app.R
 import com.gura.face_recognition_app.RegisterActivity
 import com.gura.face_recognition_app.helper.DisplayComponentHelper
-import com.gura.face_recognition_app.model.AuthLoginResponse
-import com.gura.face_recognition_app.service.AuthService
+import com.gura.face_recognition_app.viewmodel.AppViewModelFactory
 import com.gura.face_recognition_app.viewmodel.LoginActivityViewModel
 import kotlinx.coroutines.launch
-import retrofit2.Response
 
 class LoginActivity : AppCompatActivity() {
 
@@ -23,7 +22,9 @@ class LoginActivity : AppCompatActivity() {
     private lateinit var passwordEditText: EditText
     private lateinit var registerButton: Button
     private lateinit var loginButton: Button
+
     private lateinit var viewModel: LoginActivityViewModel
+    private lateinit var factory: AppViewModelFactory
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -32,9 +33,11 @@ class LoginActivity : AppCompatActivity() {
         // Initialize helper for customizing display component
         val displayComponentHelper = DisplayComponentHelper(this@LoginActivity,window)
         displayComponentHelper.changeStatusBarColor(R.color.white)
+        AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_NO)
 
         // View Model instance
-        viewModel = ViewModelProvider(this)[LoginActivityViewModel::class.java]
+        factory = AppViewModelFactory(application)
+        viewModel = ViewModelProvider(this, factory)[LoginActivityViewModel::class.java]
 
         // Initialize the layout variable with view id
         emailEditText = findViewById(R.id.emailEditText)
@@ -47,7 +50,7 @@ class LoginActivity : AppCompatActivity() {
             val password = passwordEditText.text.toString()
 
             lifecycleScope.launch {
-                viewModel.login(email,password,listener)
+                viewModel.login(email,password)
             }
         }
 
@@ -56,13 +59,14 @@ class LoginActivity : AppCompatActivity() {
             startActivity(intent)
         }
 
-    }
-
-    // Listener when authentication login service is called
-    private val listener = object: AuthService.AuthLoginInterface{
-        override fun onCompleted(response: Response<AuthLoginResponse>) {
-            val intent = Intent(this@LoginActivity, MainActivity::class.java)
-            startActivity(intent)
+        viewModel.authCmd.observe(this){
+            if(it.cmd == "AUTH_LOGIN_COMPLETED"){
+                val intent = Intent(this, MainActivity::class.java)
+                finish()
+                startActivity(intent)
+            }else if(it.cmd == "AUTH_LOGIN_FAILED"){
+                Toast.makeText(this,"Login failed",Toast.LENGTH_SHORT).show()
+            }
         }
     }
 }

@@ -9,7 +9,7 @@ android {
 
     defaultConfig {
         applicationId "com.gura.face_recognition_app"
-        minSdk 24
+        minSdk 33
         targetSdk 34
         versionCode 1
         versionName "1.0"
@@ -30,25 +30,40 @@ android {
     kotlinOptions {
         jvmTarget = '1.8'
     }
+    buildFeatures {
+        viewBinding true
+    }
 }
 
 dependencies {
     def camerax_version = '1.3.0-beta01'
     def fragment_version = '1.6.0'
+    def lifecycle_version = '2.3.0'
+    def camera_button_version = '2.0.1'
+    def retrofit_version = '2.9.0'
     /*--------------------  Android Library  -------------------*/
     implementation 'androidx.core:core-ktx:1.10.1'
     implementation 'org.jetbrains.kotlinx:kotlinx-coroutines-android:1.7.3'
     implementation 'androidx.appcompat:appcompat:1.6.1'
-    implementation 'com.google.android.material:material:1.11.0-alpha01'
+    implementation 'androidx.preference:preference-ktx:1.2.1'
     implementation 'androidx.constraintlayout:constraintlayout:2.1.4'
+    // View Model
+    implementation "androidx.lifecycle:lifecycle-viewmodel-ktx:$lifecycle_version"
+    implementation "androidx.lifecycle:lifecycle-livedata-ktx:$lifecycle_version"
+    implementation "androidx.lifecycle:lifecycle-runtime-ktx:$lifecycle_version"
+    //noinspection GradleDependency
+    implementation 'androidx.core:core-ktx:1.3.2'
     /*-----------------  Data Transfer Library  ----------------*/
     // HTTP (OKHTTP3, Retrofit) and Websocket (Java Websocket Client)
-    implementation('com.squareup.okhttp3:okhttp:5.0.0-alpha.11')
+    implementation 'com.squareup.okhttp3:okhttp:5.0.0-alpha.11'
     implementation 'tech.gusavila92:java-android-websocket-client:1.2.2'
-    implementation 'com.squareup.retrofit2:retrofit:2.9.0'
-    implementation 'com.squareup.retrofit2:converter-gson:2.9.0'
-
+    implementation "com.squareup.retrofit2:retrofit:$retrofit_version"
+    implementation "com.squareup.retrofit2:converter-gson:$retrofit_version"
+    // Image Downloading
+    //noinspection GradleDependency
+    implementation 'com.squareup.picasso:picasso:2.5.2'
     // Share Preferences (used to create and access file containing a key-value)
+    //noinspection GradleDependency
     implementation "androidx.preference:preference-ktx:1.2.0"
 
     /*---------------  Machine Learning Library  ---------------*/
@@ -64,7 +79,10 @@ dependencies {
 
     /*--------------------  Layout Library  --------------------*/
     // Custom EditText
+    //noinspection GradleDependency
     implementation 'com.google.android.material:material:1.11.0-alpha01'
+    // Animation loading
+    implementation 'com.github.razaghimahdi:Android-Loading-Dots:1.3.1'
     // Circular ImageView
     implementation 'de.hdodenhof:circleimageview:3.1.0'
     // Circular Progress Bar
@@ -74,11 +92,16 @@ dependencies {
     // Fragment
     //noinspection GradleDependency
     implementation("androidx.fragment:fragment-ktx:$fragment_version")
+    //noinspection GradleDependency
+    implementation 'androidx.recyclerview:recyclerview:1.2.0'
     // Custom Camera Button
-    implementation 'com.hluhovskyi.camerabutton:camerabutton:2.0.1'
-    implementation 'com.hluhovskyi.camerabutton:camerabutton-rxjava2:2.0.1'
-    implementation 'com.hluhovskyi.camerabutton:camerabutton-rxjava2-kotlin:2.0.1'
+    implementation "com.hluhovskyi.camerabutton:camerabutton:$camera_button_version"
+    implementation "com.hluhovskyi.camerabutton:camerabutton-rxjava2:$camera_button_version"
+    implementation "com.hluhovskyi.camerabutton:camerabutton-rxjava2-kotlin:$camera_button_version"
+    // Pin View
+    implementation 'io.github.chaosleung:pinview:1.4.4'
     /*--------------------  Default Library  -------------------*/
+    apply plugin: 'kotlin-android'
     implementation fileTree(dir: 'libs', include: ['*.jar'])
     testImplementation 'junit:junit:4.13.2'
     androidTestImplementation 'androidx.test.ext:junit:1.1.5'

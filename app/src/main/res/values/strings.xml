@@ -1,7 +1,23 @@
 <resources>
-    <string name="app_name">face-recognition-app</string>
+    <string name="app_name">Face Prove</string>
     <string name="backend_server_ip">192.168.0.210:3001</string>
     <string name="ml_server_ip">192.168.0.210:3002</string>
     <string name="hello_blank_fragment">Hello blank fragment</string>
     <string name="preference_file_key">private_preferences</string>
+    <string name="title_activity_settings">SettingsActivity</string>
+
+    <!-- Preference Titles -->
+    <string name="messages_header">Messages</string>
+    <string name="sync_header">Sync</string>
+
+    <!-- Messages Preferences -->
+    <string name="signature_title">Your signature</string>
+    <string name="reply_title">Default reply action</string>
+
+    <!-- Sync Preferences -->
+    <string name="sync_title">Sync email periodically</string>
+    <string name="attachment_title">Download incoming attachments</string>
+    <string name="attachment_summary_on">Automatically download attachments for incoming emails
+    </string>
+    <string name="attachment_summary_off">Only download attachments when manually requested</string>
 </resources>

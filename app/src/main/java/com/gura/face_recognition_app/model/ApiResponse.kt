@@ -18,13 +18,22 @@ data class FaceRecognitionRequest(
 )
 
 data class FaceRecognitionResponse(
-    @SerializedName("name")
-    var name: String?  = null,
     @SerializedName("accuracy")
-    var accuracy: String? = null,
-    @SerializedName("timestamp")
-    var timeStamp: String
-    )
+    var accuracy: Float? = null,
+    @SerializedName("checkedTime")
+    var checkedTime: String,
+    @SerializedName("statusCode")
+    var statusCode: Int,
+    @SerializedName("result")
+    var contact: Contact
+)
+
+data class EncodeContactImageResponse(
+    @SerializedName("message")
+    var message: String? = null,
+    @SerializedName("encodedId")
+    var encodedId: String? = null,
+)
 
 data class AuthLoginRequest (
     @SerializedName("email")
@@ -48,15 +57,9 @@ data class AuthRegisterRequest (
     var firstname: String,
     @SerializedName("lastname")
     var lastname: String,
-    @SerializedName("gender")
-    var gender: String,
     @SerializedName("personalId")
-    var personalId: String,
-    @SerializedName("dob")
-    var dob: String,
-    @SerializedName("profileImage")
-    var profile_image: String
-    )
+    var personalId: String
+)
 
 data class AuthRegisterResponse(
     @SerializedName("message")
@@ -84,6 +87,13 @@ data class UserInformationResponse (
     var personalId: String,
     @SerializedName("dob")
     var dob: String,
-    @SerializedName("profileImage")
-    var profile_image: String
+    @SerializedName("image")
+    var profileImage: String,
+    @SerializedName("organizationId")
+    var organizationId: Int
+)
+
+data class OrganizationResponse (
+    @SerializedName("organization")
+    var organization: Organization
 )

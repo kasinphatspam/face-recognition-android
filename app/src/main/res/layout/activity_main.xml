@@ -5,14 +5,13 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context=".MainActivity"
+    tools:context=".view.MainActivity"
     android:background="@color/white_blue">
 
     <androidx.fragment.app.FragmentContainerView
         android:id="@+id/fragment_container_view"
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:layout_marginBottom="70dp"/>
+        android:layout_height="match_parent" />
 
     <androidx.cardview.widget.CardView
         android:layout_width="match_parent"
@@ -29,7 +28,7 @@
             android:id="@+id/bottomBar"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            app:backgroundColor="@color/pink"
+            app:backgroundColor="#2E2E2E"
             app:layout_constraintBottom_toBottomOf="parent"
             app:menu="@menu/menu_main"
             app:textColor="@color/white" />

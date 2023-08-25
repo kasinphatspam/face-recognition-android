@@ -6,10 +6,11 @@ import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
 import androidx.appcompat.app.AppCompatActivity
+import androidx.appcompat.app.AppCompatDelegate
 import androidx.lifecycle.ViewModelProvider
-import com.gura.face_recognition_app.MainActivity
 import com.gura.face_recognition_app.R
 import com.gura.face_recognition_app.helper.DisplayComponentHelper
+import com.gura.face_recognition_app.viewmodel.AppViewModelFactory
 import com.gura.face_recognition_app.viewmodel.SplashActivityViewModel
 
 @SuppressLint("CustomSplashScreen")
@@ -17,7 +18,9 @@ class SplashActivity : AppCompatActivity() {
 
     private val mInterval: Long = 2000
     private var handler: Handler? = null
+
     private lateinit var viewModel: SplashActivityViewModel
+    private lateinit var factory: AppViewModelFactory
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -26,11 +29,38 @@ class SplashActivity : AppCompatActivity() {
         // Initialize helper for customizing display component
         val displayComponentHelper = DisplayComponentHelper(this@SplashActivity, window)
         displayComponentHelper.changeStatusBarColor(R.color.white)
+        AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_NO)
 
         // View Model instance
-        viewModel = ViewModelProvider(this)[SplashActivityViewModel::class.java]
+        factory = AppViewModelFactory(application)
+        viewModel = ViewModelProvider(this, factory)[SplashActivityViewModel::class.java]
         handler = Handler(Looper.getMainLooper())
         startRepeatingTask()
+
+        // Change the intent activity when the server is online.
+        viewModel.isConnected.observe(this){
+            if(it){
+                stopRepeatingTask()
+                // Read file and check if userId in Share Preferences is not null
+                if (viewModel.getCurrentSignedInAccount() != -1) {
+                    viewModel.setUserId()
+                    // Move to main activity and close all previous activity
+                    val intent = Intent(
+                        this@SplashActivity, MainActivity::class.java
+                    )
+                    intent.flags = Intent.FLAG_ACTIVITY_CLEAR_TOP
+                    startActivity(intent)
+                    finish()
+                } else {
+                    val intent = Intent(
+                        this@SplashActivity, LoginActivity::class.java
+                    )
+                    intent.flags = Intent.FLAG_ACTIVITY_CLEAR_TOP
+                    startActivity(intent)
+                    finish()
+                }
+            }
+        }
     }
 
     // Create loop for checking preparation of connection
@@ -38,32 +68,9 @@ class SplashActivity : AppCompatActivity() {
         @SuppressLint("SetTextI18n")
         override fun run() {
             try {
-                viewModel.checkServerConnection()
-                // Change the intent activity when the server is online.
-                if (viewModel.isConnectionToBackend &&
-                    viewModel.isConnectionToMlServer &&
-                    viewModel.isNetworkConnected())
-                {
-                    stopRepeatingTask()
-                    // Read file and check if userId in Share Preferences is not null
-                    if (viewModel.getCurrentSignedInAccount() != -1) {
-                        // Move to main activity and close all previous activity
-                        val intent = Intent(
-                            this@SplashActivity, MainActivity::class.java
-                        )
-                        intent.flags = Intent.FLAG_ACTIVITY_CLEAR_TOP
-                        startActivity(intent)
-                        finish()
-                    } else {
-                        val intent = Intent(
-                            this@SplashActivity, LoginActivity::class.java
-                        )
-                        intent.flags = Intent.FLAG_ACTIVITY_CLEAR_TOP
-                        startActivity(intent)
-                        finish()
-                    }
+                if(viewModel.isNetworkConnected()){
+                    viewModel.checkServerConnection()
                 }
-
             } finally {
                 // Add time delay
                 handler!!.postDelayed(this, mInterval)

@@ -2,20 +2,18 @@ package com.gura.face_recognition_app
 
 import android.Manifest
 import android.content.pm.PackageManager
-import android.database.Cursor
 import android.graphics.Bitmap
 import android.graphics.Matrix
 import android.net.Uri
 import android.os.Build
+import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.provider.MediaStore
 import android.util.Log
 import android.view.View
 import android.widget.ImageButton
-import android.widget.TextView
 import android.widget.Toast
 import androidx.annotation.RequiresApi
-import androidx.appcompat.app.AppCompatActivity
 import androidx.camera.core.CameraSelector
 import androidx.camera.core.ImageCapture
 import androidx.camera.core.ImageCaptureException
@@ -24,52 +22,56 @@ import androidx.camera.lifecycle.ProcessCameraProvider
 import androidx.camera.view.PreviewView
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
+import androidx.lifecycle.lifecycleScope
 import com.google.android.material.bottomsheet.BottomSheetBehavior
-import com.google.android.material.bottomsheet.BottomSheetBehavior.BottomSheetCallback
 import com.google.android.material.bottomsheet.BottomSheetDialog
-import com.gura.face_recognition_app.model.FaceRecognitionResponse
-import com.gura.face_recognition_app.service.RecognitionService
+import com.gura.face_recognition_app.helper.DisplayComponentHelper
+import com.gura.face_recognition_app.model.EncodeContactImageResponse
+import com.gura.face_recognition_app.repository.RecognitionRepository
 import com.hluhovskyi.camerabutton.CameraButton
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 import java.io.File
 import java.text.SimpleDateFormat
 import java.util.Locale
 import java.util.concurrent.ExecutorService
 import java.util.concurrent.Executors
 
-
-open class CameraActivity : AppCompatActivity() {
+class EncodeContactActivity : AppCompatActivity() {
 
     private var imageCapture: ImageCapture? = null
     private lateinit var outputDirectory: File
     private lateinit var cameraExecutor: ExecutorService
     private var CAMERA_SIDE = "DEFAULT_BACK_CAMERA"
     private var CAMERA_STATE = false
-
-    private lateinit var bottomSheetDialog: BottomSheetDialog
-    private lateinit var faceNotFoundBottomSheetDialog: BottomSheetDialog
-    private lateinit var unknownBottomSheetDialog: BottomSheetDialog
     private lateinit var loadingBottomSheetDialog: BottomSheetDialog
+    private var contactId: Int = 0
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_camera)
+        setContentView(R.layout.activity_encode_contact)
+
+        contactId = intent.getIntExtra("contactId",0)
 
         // hide the action bar
         supportActionBar?.hide()
-        window.statusBarColor = ContextCompat.getColor(this, R.color.black)
-        window.navigationBarColor = ContextCompat.getColor(this, R.color.black)
+        val displayComponentHelper = DisplayComponentHelper(this@EncodeContactActivity, window)
+        displayComponentHelper.changeStatusBarColor(R.color.black)
+        displayComponentHelper.changeNavigationBarColor(R.color.black)
 
         // Check camera permissions if all permission granted
         // start camera else ask for the permission
         if (allPermissionsGranted()) {
             startBackCamera()
         } else {
-            ActivityCompat.requestPermissions(this, REQUIRED_PERMISSIONS, REQUEST_CODE_PERMISSIONS)
+            ActivityCompat.requestPermissions(this,
+                REQUIRED_PERMISSIONS, REQUEST_CODE_PERMISSIONS
+            )
         }
 
         val captureCameraButton: CameraButton = findViewById(R.id.captureCameraButton)
         val rotateCameraImageButton: ImageButton = findViewById(R.id.rotateCameraImageButton)
-        var closeImageButton: ImageButton = findViewById(R.id.closeImageButton)
+        val closeImageButton: ImageButton = findViewById(R.id.closeImageButton)
 
         outputDirectory = getOutputDirectory()
         cameraExecutor = Executors.newSingleThreadExecutor()
@@ -80,10 +82,10 @@ open class CameraActivity : AppCompatActivity() {
         }
 
         rotateCameraImageButton.setOnClickListener {
-            CAMERA_SIDE = if(CAMERA_SIDE == "DEFAULT_BACK_CAMERA") {
+            CAMERA_SIDE = if (CAMERA_SIDE == "DEFAULT_BACK_CAMERA") {
                 startFrontCamera()
                 "DEFAULT_FRONT_CAMERA"
-            }else{
+            } else {
                 startBackCamera()
                 "DEFAULT_BACK_CAMERA"
             }
@@ -93,27 +95,15 @@ open class CameraActivity : AppCompatActivity() {
             finish()
         }
 
-        val loadingBottomSheetView: View = layoutInflater.inflate(R.layout.bottomsheet_loading, null)
-        loadingBottomSheetDialog = BottomSheetDialog(this@CameraActivity)
+        val loadingBottomSheetView: View =
+            layoutInflater.inflate(R.layout.bottomsheet_loading, null)
+        loadingBottomSheetDialog = BottomSheetDialog(this@EncodeContactActivity)
         loadingBottomSheetDialog.setContentView(loadingBottomSheetView)
         loadingBottomSheetDialog.setCancelable(false)
         loadingBottomSheetDialog.setCanceledOnTouchOutside(false)
-        val loadingBottomSheetBehavior: BottomSheetBehavior<*> = BottomSheetBehavior.from(loadingBottomSheetView.parent as View)
+        val loadingBottomSheetBehavior: BottomSheetBehavior<*> =
+            BottomSheetBehavior.from(loadingBottomSheetView.parent as View)
         loadingBottomSheetBehavior.setBottomSheetCallback(bottomSheetCallback)
-
-        val unknownBottomSheetView: View = layoutInflater.inflate(R.layout.bottomsheet_unknown, null)
-        unknownBottomSheetDialog = BottomSheetDialog(this@CameraActivity)
-        unknownBottomSheetDialog.setContentView(unknownBottomSheetView)
-        val unknownBottomSheetBehavior: BottomSheetBehavior<*> = BottomSheetBehavior.from(unknownBottomSheetView.parent as View)
-        unknownBottomSheetBehavior.setBottomSheetCallback(bottomSheetCallback)
-
-        val faceNotFoundBottomSheetView: View = layoutInflater.inflate(R.layout.bottomsheet_no_face, null)
-        faceNotFoundBottomSheetDialog = BottomSheetDialog(this@CameraActivity)
-        faceNotFoundBottomSheetDialog.setContentView(faceNotFoundBottomSheetView)
-        val faceNotFoundBottomSheetBehavior: BottomSheetBehavior<*> = BottomSheetBehavior.from(unknownBottomSheetView.parent as View)
-        faceNotFoundBottomSheetBehavior.setBottomSheetCallback(bottomSheetCallback)
-
-        bottomSheetDialog = BottomSheetDialog(this@CameraActivity)
     }
 
     private fun takePhoto() {
@@ -129,6 +119,8 @@ open class CameraActivity : AppCompatActivity() {
 
         // Create output options object which contains file + metadata
         val outputOptions = ImageCapture.OutputFileOptions.Builder(photoFile).build()
+
+        val userId = App.instance.userId
 
         // Set up image capture listener,
         // which is triggered after photo has
@@ -146,54 +138,64 @@ open class CameraActivity : AppCompatActivity() {
                     val savedUri = Uri.fromFile(photoFile)
 
                     val matrix = Matrix()
-                    matrix.setRotate(270f)
+                    matrix.setRotate(90f)
 
-                    val bitmap: Bitmap = MediaStore.Images.Media.getBitmap(this@CameraActivity.contentResolver, savedUri)
-                    val scaledBitmap = Bitmap.createScaledBitmap(bitmap, 500, 500, true)
-                    val rotatedBitmap = Bitmap.createBitmap(scaledBitmap, 0, 0,scaledBitmap.width, scaledBitmap.height, matrix, true)
-                    val recognitionService = RecognitionService(this@CameraActivity)
-                    val base64 = recognitionService.convertImageToBase64(rotatedBitmap)
+                    val bitmap: Bitmap = MediaStore
+                        .Images.Media
+                        .getBitmap(this@EncodeContactActivity.contentResolver, savedUri)
+                    val scaledBitmap = Bitmap
+                        .createScaledBitmap(
+                            bitmap,
+                            500,
+                            500,
+                            true
+                        )
+                    val rotatedBitmap = Bitmap
+                        .createBitmap(
+                            scaledBitmap,
+                            0,
+                            0,
+                            scaledBitmap.width,
+                            scaledBitmap.height,
+                            matrix,
+                            true
+                        )
+                    val recognitionRepository = RecognitionRepository(this@EncodeContactActivity)
+                    val base64 = recognitionRepository.convertImageToBase64(rotatedBitmap)
 
-                    recognitionService.startFaceRecognition(base64 ,object : RecognitionService.RecognitionInterface{
-                        override fun onCompleted(faceRecognitionResponse: FaceRecognitionResponse) {
+                    lifecycleScope.launch(Dispatchers.Main) {
+                        if(contactId == 0){
+                            Toast.makeText(this@EncodeContactActivity,"ERROR",Toast.LENGTH_SHORT).show()
                             loadingBottomSheetDialog.cancel()
-                            if(faceRecognitionResponse.name != "UNKNOWN_CUSTOMER"){
-                                if(faceRecognitionResponse.name == "FACE_NOT_FOUND"){
-                                    faceNotFoundBottomSheetDialog.show()
-                                    CAMERA_STATE = false
-                                }else{
-                                    Toast.makeText(this@CameraActivity,faceRecognitionResponse.name,Toast.LENGTH_SHORT).show()
-                                    CAMERA_STATE = true
-
-                                    val bottomSheetView: View = layoutInflater.inflate(R.layout.bottomsheet_result, null)
-                                    val nameTextView = bottomSheetView.findViewById<TextView>(R.id.nameTextView)
-                                    val roleTextView = bottomSheetView.findViewById<TextView>(R.id.roleTextView)
-                                    val addressTextView = bottomSheetView.findViewById<TextView>(R.id.addressTextView)
-                                    val emailTextView = bottomSheetView.findViewById<TextView>(R.id.emailTextView)
-                                    val telephoneTextView = bottomSheetView.findViewById<TextView>(R.id.telTextView)
-                                    val accuracyTextView = bottomSheetView.findViewById<TextView>(R.id.accuracyTextView)
-
-                                    bottomSheetDialog.setContentView(bottomSheetView)
-                                    val bottomSheetBehavior: BottomSheetBehavior<*> = BottomSheetBehavior.from(bottomSheetView.parent as View)
-                                    bottomSheetBehavior.setBottomSheetCallback(bottomSheetCallback)
-
-                                    bottomSheetDialog.show()
-                                }
-                            }else{
-                                unknownBottomSheetDialog.show()
-                                CAMERA_STATE = false
-                            }
+                            finish()
                         }
+                        recognitionRepository.encodeContactImage(userId!!,contactId,base64,
+                            object : RecognitionRepository.EncodeInterface{
+                            override fun onCompleted(encodeContactImageResponse: EncodeContactImageResponse) {
+                                if(encodeContactImageResponse.encodedId == (-1).toString()){
+                                    Toast.makeText(
+                                        this@EncodeContactActivity,
+                                        "Face not found please try again.",
+                                        Toast.LENGTH_SHORT).show()
+                                }else{
+                                    Toast.makeText(
+                                        this@EncodeContactActivity,
+                                        "Encoded successfully",
+                                        Toast.LENGTH_SHORT).show()
+                                }
+                                loadingBottomSheetDialog.cancel()
+                            }
 
-                    })
+                        })
+                    }
 
                     val fileDelete = File(savedUri.path!!)
 
                     if (fileDelete.exists()) {
                         if (fileDelete.delete()) {
-                            Log.d("CameraActivity","file Deleted :")
+                            Log.d("CameraActivity", "file Deleted :")
                         } else {
-                            Log.d("CameraActivity","file not Deleted :")
+                            Log.d("CameraActivity", "file not Deleted :")
                         }
                     }
 
@@ -201,7 +203,7 @@ open class CameraActivity : AppCompatActivity() {
             })
     }
 
-    private fun startFrontCamera(){
+    private fun startFrontCamera() {
         val cameraProviderFuture = ProcessCameraProvider.getInstance(this)
 
         cameraProviderFuture.addListener(Runnable {
@@ -304,7 +306,8 @@ open class CameraActivity : AppCompatActivity() {
                 // If permissions are not granted,
                 // present a toast to notify the user that
                 // the permissions were not granted.
-                Toast.makeText(this, "Permissions not granted by the user.", Toast.LENGTH_SHORT).show()
+                Toast.makeText(this, "Permissions not granted by the user.", Toast.LENGTH_SHORT)
+                    .show()
                 finish()
             }
         }
@@ -317,19 +320,19 @@ open class CameraActivity : AppCompatActivity() {
         private val REQUIRED_PERMISSIONS = arrayOf(Manifest.permission.CAMERA)
     }
 
+
     override fun onDestroy() {
         super.onDestroy()
         cameraExecutor.shutdown()
     }
 
-    private var bottomSheetCallback: BottomSheetCallback = object : BottomSheetCallback() {
+    private var bottomSheetCallback: BottomSheetBehavior.BottomSheetCallback = object : BottomSheetBehavior.BottomSheetCallback() {
         override fun onStateChanged(bottomSheet: View, newState: Int) {
-            if(newState == BottomSheetBehavior.STATE_HIDDEN){
-                bottomSheetDialog.cancel()
-                unknownBottomSheetDialog.cancel()
+            if (newState == BottomSheetBehavior.STATE_HIDDEN) {
                 loadingBottomSheetDialog.cancel()
             }
         }
+
         override fun onSlide(bottomSheet: View, slideOffset: Float) {}
     }
 }

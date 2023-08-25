@@ -1,60 +1,73 @@
 package com.gura.face_recognition_app.fragment
 
+import android.content.Context
 import android.os.Bundle
-import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.view.inputmethod.InputMethodManager
+import android.widget.EditText
+import androidx.fragment.app.Fragment
+import androidx.lifecycle.lifecycleScope
+import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.recyclerview.widget.RecyclerView
+import com.gura.face_recognition_app.ItemsViewModel
 import com.gura.face_recognition_app.R
+import com.gura.face_recognition_app.adapter.ContactAdapter
+import com.gura.face_recognition_app.model.Contact
+import com.gura.face_recognition_app.repository.OrganizationRepository
+import kotlinx.coroutines.launch
 
-// TODO: Rename parameter arguments, choose names that match
-// the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
-private const val ARG_PARAM1 = "param1"
-private const val ARG_PARAM2 = "param2"
 
-/**
- * A simple [Fragment] subclass.
- * Use the [ContactFragment.newInstance] factory method to
- * create an instance of this fragment.
- */
 class ContactFragment : Fragment() {
-    // TODO: Rename and change types of parameters
-    private var param1: String? = null
-    private var param2: String? = null
 
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-        arguments?.let {
-            param1 = it.getString(ARG_PARAM1)
-            param2 = it.getString(ARG_PARAM2)
-        }
-    }
+    private lateinit var context: Context
+    private lateinit var recyclerView: RecyclerView
+    private lateinit var searchEditText: EditText
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View? {
+        context = container!!.context
         // Inflate the layout for this fragment
         return inflater.inflate(R.layout.fragment_contact, container, false)
     }
 
-    companion object {
-        /**
-         * Use this factory method to create a new instance of
-         * this fragment using the provided parameters.
-         *
-         * @param param1 Parameter 1.
-         * @param param2 Parameter 2.
-         * @return A new instance of fragment ContactFragment.
-         */
-        // TODO: Rename and change types and number of parameters
-        @JvmStatic
-        fun newInstance(param1: String, param2: String) =
-            ContactFragment().apply {
-                arguments = Bundle().apply {
-                    putString(ARG_PARAM1, param1)
-                    putString(ARG_PARAM2, param2)
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
+
+        searchEditText = view.findViewById(R.id.searchEditText)
+        val argument = arguments
+        if(argument != null){
+            val imm = context.getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager?
+            imm!!.toggleSoftInput(InputMethodManager.SHOW_FORCED, 0)
+        }
+        recyclerView = view.findViewById(R.id.contactRecyclerView)
+        recyclerView.layoutManager = LinearLayoutManager(context)
+        recyclerView.isNestedScrollingEnabled = false
+
+        val data = ArrayList<ItemsViewModel>()
+        val organizationRepository = OrganizationRepository(context)
+        lifecycleScope.launch {
+            organizationRepository.getContactInOrganization(
+                object : OrganizationRepository.GetContactListInterface{
+                    override fun onCompleted(list: List<Contact>) {
+                        list.forEach {
+                            data.add(
+                                ItemsViewModel(
+                                    it.firstname + " " + it.lastname,
+                                    it.organizationName, it.image, it.contactId
+                                )
+                            )
+                        }
+
+                        val adapter = ContactAdapter(context,data)
+                        recyclerView.adapter = adapter
+                    }
+
                 }
-            }
+            )
+        }
     }
 }

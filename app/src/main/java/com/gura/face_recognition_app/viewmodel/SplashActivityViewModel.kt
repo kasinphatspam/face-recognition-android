@@ -6,23 +6,22 @@ import android.net.ConnectivityManager
 import android.net.NetworkCapabilities
 import android.util.Log
 import androidx.lifecycle.AndroidViewModel
-import com.gura.face_recognition_app.service.AuthService
-import com.gura.face_recognition_app.service.ConnectionService
+import androidx.lifecycle.MutableLiveData
+import androidx.lifecycle.ViewModel
+import com.gura.face_recognition_app.helper.SharePreferencesHelper
+import com.gura.face_recognition_app.repository.AuthRepository
+import com.gura.face_recognition_app.repository.ConnectionRepository
 
 
 class SplashActivityViewModel(private val application: Application) :
-    AndroidViewModel(application) {
+    ViewModel() {
 
-    var isConnectionToBackend: Boolean = false
-    var isConnectionToMlServer: Boolean = false
+    var isConnected = MutableLiveData<Boolean>(false)
+    private val connectionRepository = ConnectionRepository(application)
+    private val authRepository = AuthRepository(application)
+    private val preferencesHelper = SharePreferencesHelper(application)
 
-    private val classTag = "SplashActivityViewModel"
-    private val backendConnectionTag = "BACKEND_CONNECTION"
-    private val mlConnectionTag = "ML_CONNECTION"
-    private val connectionService = ConnectionService(application)
-    private val authService = AuthService(application)
-
-    /* --------------------- Connection Function -----------------------*/
+    /* --------------------- Network Function -----------------------*/
     fun isNetworkConnected(): Boolean {
         val connectivityManager =
             application.getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager?
@@ -41,41 +40,54 @@ class SplashActivityViewModel(private val application: Application) :
         return false
     }
 
-    fun checkServerConnection(): Boolean {
-        connectionService.checkBackendServerStatus(backendConnectionTag, connectionListener)
-        connectionService.checkMlServerStatus(mlConnectionTag, connectionListener)
-        return true
-    }
+    /* --------------------- Connection Function -----------------------*/
+    fun checkServerConnection() {
+        var connection1 = false
+        var connection2 =false
 
-    private val connectionListener = object : ConnectionService.CheckServerStatusInterface {
-        override fun onConnected(tag: String) {
-            Log.d(classTag, "$tag is already connected")
-            when (tag) {
-                backendConnectionTag -> {
-                    isConnectionToBackend = true
-                }
-
-                mlConnectionTag -> {
-                    isConnectionToMlServer = true
+        connectionRepository.checkBackendServerStatus(
+            object : ConnectionRepository.CheckServerStatusInterface{
+            override fun onConnected() {
+                Log.d("Connection", "Server connection1 is connected")
+                connection1 = true
+                if(connection2){
+                    isConnected.apply {
+                        value = true
+                    }
                 }
             }
-        }
-
-        override fun onDisconnected(tag: String, errorMessage: String) {
-            when (tag) {
-                backendConnectionTag -> {
-                    isConnectionToBackend = false
-                }
-
-                mlConnectionTag -> {
-                    isConnectionToMlServer = false
+            override fun onDisconnected(errorMessage: String) {
+                connection1 = false
+            }
+        })
+        connectionRepository.checkMlServerStatus(
+            object : ConnectionRepository.CheckServerStatusInterface{
+            override fun onConnected() {
+                Log.d("Connection", "Server connection2 is connected")
+                connection2 = true
+                if(connection1){
+                    isConnected.apply {
+                        value = true
+                    }
                 }
             }
-        }
+            override fun onDisconnected(errorMessage: String) {
+                connection2 = false
+            }
+        })
     }
 
     /* --------------------- Authentication Function -----------------------*/
     fun getCurrentSignedInAccount(): Int {
-        return authService.currentUser()
+        return authRepository.currentUser()
+    }
+
+    fun setUserId(): Boolean{
+        val userId = preferencesHelper.getInstance().getInt("userId",-1)
+        if(userId != -1){
+            authRepository.updateUserId(userId)
+            return true
+        }
+        return false
     }
 }

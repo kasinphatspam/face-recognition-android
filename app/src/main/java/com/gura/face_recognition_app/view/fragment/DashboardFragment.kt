@@ -1,11 +1,10 @@
-package com.gura.face_recognition_app.fragment
+package com.gura.face_recognition_app.view.fragment
 
 import android.annotation.SuppressLint
 import android.content.Context
 import android.content.Intent
 import android.os.Bundle
 import android.text.Html
-import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -13,20 +12,16 @@ import android.widget.ImageButton
 import android.widget.TextView
 import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.fragment.app.Fragment
+import androidx.fragment.app.activityViewModels
 import androidx.lifecycle.lifecycleScope
 import com.gura.face_recognition_app.R
 import com.gura.face_recognition_app.SettingActivity
-import com.gura.face_recognition_app.model.OrganizationResponse
-import com.gura.face_recognition_app.model.UserInformationResponse
-import com.gura.face_recognition_app.repository.OrganizationRepository
-import com.gura.face_recognition_app.repository.UserRepository
-import com.gura.face_recognition_app.view.CameraActivity
-import com.gura.face_recognition_app.view.RealtimeCameraActivity
+import com.gura.face_recognition_app.view.activity.RealtimeCameraActivity
+import com.gura.face_recognition_app.viewmodel.ShareFragmentViewModel
 import com.squareup.picasso.Picasso
 import de.hdodenhof.circleimageview.CircleImageView
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.launch
-import retrofit2.Response
 
 class DashboardFragment : Fragment() {
 
@@ -36,6 +31,7 @@ class DashboardFragment : Fragment() {
     private lateinit var passcodeTextView: TextView
     private lateinit var profileCircleImageView: CircleImageView
     private lateinit var constraintLayout: ConstraintLayout
+    private val fragmentViewModel by activityViewModels<ShareFragmentViewModel>()
 
     interface SearchClickListener {
         fun onClick()
@@ -52,6 +48,7 @@ class DashboardFragment : Fragment() {
         return inflater.inflate(R.layout.fragment_dashboard, container, false)
     }
 
+    @SuppressLint("SetTextI18n")
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
@@ -65,36 +62,25 @@ class DashboardFragment : Fragment() {
             searchClickListener.onClick()
         }
 
-        val userRepository = UserRepository(context)
-        val organizationRepository = OrganizationRepository(context)
-
         lifecycleScope.launch {
+            fragmentViewModel.loadUserAsync()
+            fragmentViewModel.loadOrganizationAsync()
+        }
 
-            userRepository.getCurrentUser(object : UserRepository.UserInformationInterface {
-                @SuppressLint("SetTextI18n")
-                override fun onCompleted(response: Response<UserInformationResponse>) {
-                    nameTextView.text = "Welcome, ${response.body()!!.firstname}"
-                    constraintLayout.visibility = View.VISIBLE
+        fragmentViewModel.currentUser.observe(viewLifecycleOwner) {
+            nameTextView.text = "Welcome, ${it.firstname}"
+            constraintLayout.visibility = View.VISIBLE
 
-                    Log.e("ImageAPI", response.body()!!.profileImage)
-                    Picasso.with(context)
-                        .load(response.body()!!.profileImage)
-                        .placeholder(R.drawable.default_user)
-                        .into(profileCircleImageView)
-                }
+            Picasso.with(context)
+                .load(it.image)
+                .placeholder(R.drawable.default_user)
+                .into(profileCircleImageView)
+        }
 
-            })
+        fragmentViewModel.organization.observe(viewLifecycleOwner) {
+            passcodeTextView.text = Html
+                .fromHtml("Your company passcode is \u0022${it.code}\u0022")
 
-            organizationRepository.getOrganization(
-                object : OrganizationRepository.OrganizationInformationInterface {
-                    @SuppressLint("SetTextI18n")
-                    override fun onCompleted(response: Response<OrganizationResponse>) {
-                        passcodeTextView.text = Html
-                            .fromHtml("Your company passcode is \u0022${response.body()!!.organization.code}\u0022")
-
-                    }
-                }
-            )
         }
 
         val startFaceRecognitionImageButton: ImageButton =

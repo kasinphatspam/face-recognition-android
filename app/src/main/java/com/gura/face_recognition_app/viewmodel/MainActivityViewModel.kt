@@ -4,27 +4,35 @@ import android.app.Application
 import android.content.Intent
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
+import com.gura.face_recognition_app.Command
 import com.gura.face_recognition_app.JoinOrganizationActivity
-import com.gura.face_recognition_app.model.Organization
+import com.gura.face_recognition_app.data.model.Organization
+import com.gura.face_recognition_app.repository.OrganizationRepository
 import com.gura.face_recognition_app.repository.UserRepository
 
 
 class MainActivityViewModel(private val application: Application) :
     ViewModel() {
 
-    private val userRepository = UserRepository(application)
-    var checkOrganizationIsEmpty = MutableLiveData<Boolean>(false)
+    private val organizationRepository = OrganizationRepository(application)
+    val command = MutableLiveData<Command>()
 
-    // Check if the account have joined company
-    suspend fun checkedCompany(){
-        return userRepository.checkOrganizationIsEmpty(listener)
+    suspend fun getCurrentOrganization() {
+        organizationRepository.getCurrentOrganization(listener)
     }
 
-    private val listener = object: UserRepository.CheckOrganizationInterface{
-        override fun isEmpty() {
-            checkOrganizationIsEmpty.apply {
-                value = true
+    private val listener = object: OrganizationRepository.OrganizationInformationInterface {
+        override fun onResponse(data: Organization) {
+            command.apply {
+                value = Command("FOUND_ORGANIZATION")
+            }
+        }
+
+        override fun onFailure(error: String) {
+            command.apply {
+                value = Command("NOT_FOUND_ORGANIZATION")
             }
         }
     }
+
 }

@@ -1,4 +1,4 @@
-package com.gura.face_recognition_app.view
+package com.gura.face_recognition_app.view.activity
 
 import android.content.Intent
 import androidx.appcompat.app.AppCompatActivity
@@ -11,7 +11,7 @@ import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
 import com.gura.face_recognition_app.R
 import com.gura.face_recognition_app.RegisterActivity
-import com.gura.face_recognition_app.helper.DisplayComponentHelper
+import com.gura.face_recognition_app.helper.WindowHelper
 import com.gura.face_recognition_app.viewmodel.AppViewModelFactory
 import com.gura.face_recognition_app.viewmodel.LoginActivityViewModel
 import kotlinx.coroutines.launch
@@ -31,9 +31,10 @@ class LoginActivity : AppCompatActivity() {
         setContentView(R.layout.activity_login)
 
         // Initialize helper for customizing display component
-        val displayComponentHelper = DisplayComponentHelper(this@LoginActivity,window)
-        displayComponentHelper.changeStatusBarColor(R.color.white)
-        AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_NO)
+        val window = WindowHelper(this, window)
+        window.statusBarColor = R.color.white
+        window.allowNightMode = false
+        window.publish()
 
         // View Model instance
         factory = AppViewModelFactory(application)

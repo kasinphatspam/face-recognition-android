@@ -1,4 +1,4 @@
-package com.gura.face_recognition_app.fragment
+package com.gura.face_recognition_app.view.fragment
 
 import android.content.Context
 import android.os.Bundle
@@ -8,14 +8,16 @@ import android.view.ViewGroup
 import android.view.inputmethod.InputMethodManager
 import android.widget.EditText
 import androidx.fragment.app.Fragment
+import androidx.fragment.app.activityViewModels
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
-import com.gura.face_recognition_app.ItemsViewModel
+import com.gura.face_recognition_app.viewmodel.ItemsViewModel
 import com.gura.face_recognition_app.R
 import com.gura.face_recognition_app.adapter.ContactAdapter
-import com.gura.face_recognition_app.model.Contact
+import com.gura.face_recognition_app.data.model.Contact
 import com.gura.face_recognition_app.repository.OrganizationRepository
+import com.gura.face_recognition_app.viewmodel.ShareFragmentViewModel
 import kotlinx.coroutines.launch
 
 
@@ -24,6 +26,7 @@ class ContactFragment : Fragment() {
     private lateinit var context: Context
     private lateinit var recyclerView: RecyclerView
     private lateinit var searchEditText: EditText
+    private val fragmentViewModel by activityViewModels<ShareFragmentViewModel>()
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -39,35 +42,35 @@ class ContactFragment : Fragment() {
 
         searchEditText = view.findViewById(R.id.searchEditText)
         val argument = arguments
+        // detect signal of search clicked on dashboard fragment
         if(argument != null){
             val imm = context.getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager?
             imm!!.toggleSoftInput(InputMethodManager.SHOW_FORCED, 0)
         }
+
+        // initialize recyclerview on the fragment
         recyclerView = view.findViewById(R.id.contactRecyclerView)
         recyclerView.layoutManager = LinearLayoutManager(context)
         recyclerView.isNestedScrollingEnabled = false
 
         val data = ArrayList<ItemsViewModel>()
-        val organizationRepository = OrganizationRepository(context)
+        // load contact list
         lifecycleScope.launch {
-            organizationRepository.getContactInOrganization(
-                object : OrganizationRepository.GetContactListInterface{
-                    override fun onCompleted(list: List<Contact>) {
-                        list.forEach {
-                            data.add(
-                                ItemsViewModel(
-                                    it.firstname + " " + it.lastname,
-                                    it.organizationName, it.image, it.contactId
-                                )
-                            )
-                        }
+            fragmentViewModel.loadCustomerContact()
+        }
 
-                        val adapter = ContactAdapter(context,data)
-                        recyclerView.adapter = adapter
-                    }
-
-                }
-            )
+        // put contact list to adapter and show it on recyclerview
+        fragmentViewModel.contactList.observe(viewLifecycleOwner) { list ->
+            list.forEach {
+                data.add(
+                    ItemsViewModel(
+                        it.firstname + " " + it.lastname,
+                        it.contactCompany, it.image, it.id
+                    )
+                )
+            }
+            val adapter = ContactAdapter(context, data)
+            recyclerView.adapter = adapter
         }
     }
 }

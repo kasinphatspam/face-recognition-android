@@ -1,10 +1,10 @@
 package com.gura.face_recognition_app.repository
 
 import android.content.Context
-import com.gura.face_recognition_app.api.BackendAPI
+import com.gura.face_recognition_app.data.api.BackendAPI
 import com.gura.face_recognition_app.helper.MLRetrofitHelper
 import com.gura.face_recognition_app.helper.RetrofitHelper
-import com.gura.face_recognition_app.model.ServerStatus
+import com.gura.face_recognition_app.data.response.ServerStatus
 import retrofit2.Call
 import retrofit2.Callback
 import retrofit2.Response

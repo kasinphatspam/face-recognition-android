@@ -15,8 +15,16 @@ class AppViewModelFactory(private val application: Application) : ViewModelProvi
             return SplashActivityViewModel(application) as T
         } else if (modelClass.isAssignableFrom(CameraActivityViewModel::class.java)) {
             return CameraActivityViewModel(application) as T
-        } else if (modelClass.isAssignableFrom(RealtimeCameraActivityViewModel::class.java))
+        } else if (modelClass.isAssignableFrom(RealtimeCameraActivityViewModel::class.java)) {
             return RealtimeCameraActivityViewModel(application) as T
+        } else if (modelClass.isAssignableFrom(ShareFragmentViewModel::class.java)) {
+            return ShareFragmentViewModel(application) as T
+        } else if (modelClass.isAssignableFrom(AddContactActivityViewModel::class.java)) {
+            return AddContactActivityViewModel(application) as T
+        } else if (modelClass.isAssignableFrom(RegisterActivityViewModel::class.java)) {
+            return RegisterActivityViewModel(application) as T
+        }
+
         throw IllegalArgumentException("UnknownViewModel")
     }
 }

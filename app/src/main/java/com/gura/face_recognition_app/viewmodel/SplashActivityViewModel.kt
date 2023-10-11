@@ -8,6 +8,7 @@ import android.util.Log
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
+import com.gura.face_recognition_app.helper.NetworkHelper
 import com.gura.face_recognition_app.helper.SharePreferencesHelper
 import com.gura.face_recognition_app.repository.AuthRepository
 import com.gura.face_recognition_app.repository.ConnectionRepository
@@ -20,24 +21,11 @@ class SplashActivityViewModel(private val application: Application) :
     private val connectionRepository = ConnectionRepository(application)
     private val authRepository = AuthRepository(application)
     private val preferencesHelper = SharePreferencesHelper(application)
+    private val networkHelper = NetworkHelper(application)
 
     /* --------------------- Network Function -----------------------*/
     fun isNetworkConnected(): Boolean {
-        val connectivityManager =
-            application.getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager?
-        val capabilities =
-            connectivityManager!!.getNetworkCapabilities(connectivityManager.activeNetwork)
-        if (capabilities!!.hasTransport(NetworkCapabilities.TRANSPORT_CELLULAR)) {
-            Log.i("Internet", "NetworkCapabilities.TRANSPORT_CELLULAR")
-            return true
-        } else if (capabilities.hasTransport(NetworkCapabilities.TRANSPORT_WIFI)) {
-            Log.i("Internet", "NetworkCapabilities.TRANSPORT_WIFI")
-            return true
-        } else if (capabilities.hasTransport(NetworkCapabilities.TRANSPORT_ETHERNET)) {
-            Log.i("Internet", "NetworkCapabilities.TRANSPORT_ETHERNET")
-            return true
-        }
-        return false
+        return networkHelper.isNetworkConnected()
     }
 
     /* --------------------- Connection Function -----------------------*/

@@ -1,9 +1,13 @@
 package com.gura.face_recognition_app
 
-import com.gura.face_recognition_app.model.FaceRecognitionResponse
+import com.gura.face_recognition_app.recognition.model.FaceRecognitionResponse
 
 /*--------------- Login Activity ---------------*/
 data class AuthCommand (
+    var cmd: String
+)
+
+data class Command (
     var cmd: String
 )
 

@@ -1,18 +1,19 @@
-package com.gura.face_recognition_app.api
+package com.gura.face_recognition_app.data.api
 
-import com.gura.face_recognition_app.model.AuthLoginRequest
-import com.gura.face_recognition_app.model.AuthLoginResponse
-import com.gura.face_recognition_app.model.AuthRegisterRequest
-import com.gura.face_recognition_app.model.AuthRegisterResponse
-import com.gura.face_recognition_app.model.Contact
-import com.gura.face_recognition_app.model.EncodeContactImageResponse
-import com.gura.face_recognition_app.model.FaceRecognitionRequest
-import com.gura.face_recognition_app.model.FaceRecognitionResponse
-import com.gura.face_recognition_app.model.OrganizationResponse
-import com.gura.face_recognition_app.model.ServerStatus
-import com.gura.face_recognition_app.model.UserInformationResponse
+import com.gura.face_recognition_app.data.model.Contact
+import com.gura.face_recognition_app.data.model.Organization
+import com.gura.face_recognition_app.data.model.User
+import com.gura.face_recognition_app.recognition.model.RecognitionRequest
+import com.gura.face_recognition_app.data.request.LoginRequest
+import com.gura.face_recognition_app.data.request.RegisterRequest
+import com.gura.face_recognition_app.recognition.model.EncodeContactImageResponse
+import com.gura.face_recognition_app.recognition.model.FaceRecognitionResponse
+import com.gura.face_recognition_app.data.response.LoginResponse
+import com.gura.face_recognition_app.data.response.OrganizationResponse
+import com.gura.face_recognition_app.data.response.RegisterResponse
+import com.gura.face_recognition_app.data.response.ServerStatus
+import com.gura.face_recognition_app.data.response.UpdateUserResponse
 import retrofit2.Call
-import retrofit2.Callback
 import retrofit2.Response
 import retrofit2.http.Body
 import retrofit2.http.DELETE
@@ -26,13 +27,13 @@ interface BackendAPI {
     /*--------------------  Auth API Declaration  --------------------*/
     @POST("auth/login")
     suspend fun login(
-        @Body body: AuthLoginRequest
-    ): Response<AuthLoginResponse>?
+        @Body body: LoginRequest
+    ): Response<LoginResponse>?
 
     @POST("auth/register")
     suspend fun register(
-        @Body body: AuthRegisterRequest
-    ): Response<AuthRegisterResponse>?
+        @Body body: RegisterRequest
+    ): Response<RegisterResponse>?
 
     @POST("auth/forgot-password")
     fun forgotPassword()
@@ -44,7 +45,7 @@ interface BackendAPI {
     @GET("user/{userId}")
     suspend fun getUserById(
         @Path("userId") userId: Int
-    ): Response<UserInformationResponse>
+    ): Response<User>
 
     @GET("user/{userId}/organization")
     suspend fun getCurrentOrganization(
@@ -52,7 +53,7 @@ interface BackendAPI {
     ): Response<OrganizationResponse>
 
     @PUT("user")
-    fun update()
+    fun update(id: Int, data: User): Response<UpdateUserResponse>
 
     @PUT("user/image")
     fun updateImageProfile()
@@ -64,7 +65,7 @@ interface BackendAPI {
     @GET("organization/{organizationId}")
     suspend fun getOrganizationById(
         @Path("organizationId") organizationId: Int
-    ): Response<OrganizationResponse>
+    ): Response<Organization>
 
     @POST("organization/user/{userId}/join/{passcode}")
     suspend fun join(
@@ -80,14 +81,14 @@ interface BackendAPI {
     @POST("organization/{organizationId}/contact/encode/recognition")
     suspend fun startFaceRecognition(
         @Path("organizationId") organizationId: Int,
-        @Body faceRecognitionRequest: FaceRecognitionRequest
+        @Body recognitionRequest: RecognitionRequest
     ): Response<FaceRecognitionResponse>
 
     @PUT("organization/{organizationId}/contact/{contactId}/encode")
     suspend fun encodeContactImage(
         @Path("organizationId") organizationId: Int,
         @Path("contactId") contactId: Int,
-        @Body faceRecognitionRequest: FaceRecognitionRequest
+        @Body recognitionRequest: RecognitionRequest
         ): Response<EncodeContactImageResponse>
 
     /*-------------------- Server Status API Declaration --------------------*/

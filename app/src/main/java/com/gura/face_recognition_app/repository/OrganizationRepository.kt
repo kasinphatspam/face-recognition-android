@@ -2,22 +2,24 @@ package com.gura.face_recognition_app.repository
 
 import android.content.Context
 import com.gura.face_recognition_app.App
-import com.gura.face_recognition_app.api.BackendAPI
+import com.gura.face_recognition_app.data.api.BackendAPI
 import com.gura.face_recognition_app.helper.RetrofitHelper
-import com.gura.face_recognition_app.model.Contact
-import com.gura.face_recognition_app.model.OrganizationResponse
+import com.gura.face_recognition_app.data.model.Contact
+import com.gura.face_recognition_app.data.model.Organization
+import com.gura.face_recognition_app.data.response.OrganizationResponse
 import retrofit2.Response
 
 class OrganizationRepository(val context: Context) {
 
     interface OrganizationInformationInterface {
-        fun onCompleted(response: Response<OrganizationResponse>)
+        fun onResponse(data: Organization)
+        fun onFailure(error: String)
     }
     interface GetContactListInterface {
-        fun onCompleted(list: List<Contact>)
+        fun onResponse(list: List<Contact>)
     }
     interface JoinOrganizationInterface {
-        fun onCompleted()
+        fun onResponse()
     }
 
     private val api = RetrofitHelper
@@ -26,20 +28,17 @@ class OrganizationRepository(val context: Context) {
 
     suspend fun join(userId: Int, passcode: String, listener: JoinOrganizationInterface) {
         api.join(userId, passcode)
-        listener.onCompleted()
+        listener.onResponse()
     }
 
-    suspend fun getOrganization(listener: OrganizationInformationInterface){
+    suspend fun getCurrentOrganization(listener: OrganizationInformationInterface) {
         val userId = App.instance.userId
-        val organizationResponse = api.getCurrentOrganization(userId!!)
-        if (organizationResponse.isSuccessful) {
-            val organizationId = organizationResponse.body()!!.organization.organizationId
+        val response = api.getCurrentOrganization(userId!!)
 
-            val response = api.getOrganizationById(organizationId)
-
-            if(response.isSuccessful){
-                listener.onCompleted(response)
-            }
+        if (response.isSuccessful) {
+            listener.onResponse(response.body()!!.organization)
+        }else{
+            listener.onFailure(response.raw().message)
         }
     }
 
@@ -48,13 +47,12 @@ class OrganizationRepository(val context: Context) {
         val organizationResponse = api.getCurrentOrganization(userId!!)
         if (organizationResponse.isSuccessful) {
             val contactResponse = api.getContactInOrganization(
-                organizationResponse.body()!!.organization.organizationId
+                organizationResponse.body()!!.organization.id
             )
 
             if (contactResponse.isSuccessful) {
-                listener.onCompleted(contactResponse.body()!!)
+                listener.onResponse(contactResponse.body()!!)
             }
         }
-
     }
 }

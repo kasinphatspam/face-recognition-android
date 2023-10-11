@@ -1,4 +1,4 @@
-package com.gura.face_recognition_app
+package com.gura.face_recognition_app.viewmodel
 
 data class ItemsViewModel(
     val name: String,

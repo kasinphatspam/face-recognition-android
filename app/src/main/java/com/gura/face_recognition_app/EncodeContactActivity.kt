@@ -25,9 +25,10 @@ import androidx.core.content.ContextCompat
 import androidx.lifecycle.lifecycleScope
 import com.google.android.material.bottomsheet.BottomSheetBehavior
 import com.google.android.material.bottomsheet.BottomSheetDialog
-import com.gura.face_recognition_app.helper.DisplayComponentHelper
-import com.gura.face_recognition_app.model.EncodeContactImageResponse
-import com.gura.face_recognition_app.repository.RecognitionRepository
+import com.gura.face_recognition_app.helper.WindowHelper
+import com.gura.face_recognition_app.recognition.model.EncodeContactImageResponse
+import com.gura.face_recognition_app.recognition.RecognitionHelper
+import com.gura.face_recognition_app.recognition.RecognitionRepository
 import com.hluhovskyi.camerabutton.CameraButton
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -53,11 +54,15 @@ class EncodeContactActivity : AppCompatActivity() {
 
         contactId = intent.getIntExtra("contactId",0)
 
-        // hide the action bar
+        // Change color of status bar and navigation bar to black
         supportActionBar?.hide()
-        val displayComponentHelper = DisplayComponentHelper(this@EncodeContactActivity, window)
-        displayComponentHelper.changeStatusBarColor(R.color.black)
-        displayComponentHelper.changeNavigationBarColor(R.color.black)
+        // Initialize helper for customizing display component
+        val window = WindowHelper(this, window)
+        window.statusBarColor = R.color.black
+        window.navigationBarColor = R.color.black
+        window.allowNightMode = false
+        window.keepScreenOn = true
+        window.publish()
 
         // Check camera permissions if all permission granted
         // start camera else ask for the permission
@@ -160,8 +165,7 @@ class EncodeContactActivity : AppCompatActivity() {
                             matrix,
                             true
                         )
-                    val recognitionRepository = RecognitionRepository(this@EncodeContactActivity)
-                    val base64 = recognitionRepository.convertImageToBase64(rotatedBitmap)
+                    val recognitionHelper = RecognitionHelper(this@EncodeContactActivity)
 
                     lifecycleScope.launch(Dispatchers.Main) {
                         if(contactId == 0){
@@ -169,9 +173,11 @@ class EncodeContactActivity : AppCompatActivity() {
                             loadingBottomSheetDialog.cancel()
                             finish()
                         }
-                        recognitionRepository.encodeContactImage(userId!!,contactId,base64,
+                        recognitionHelper.load(rotatedBitmap)
+                        recognitionHelper.setTarget(userId!!, contactId)
+                        recognitionHelper.train(
                             object : RecognitionRepository.EncodeInterface{
-                            override fun onCompleted(encodeContactImageResponse: EncodeContactImageResponse) {
+                            override fun onResponse(encodeContactImageResponse: EncodeContactImageResponse) {
                                 if(encodeContactImageResponse.encodedId == (-1).toString()){
                                     Toast.makeText(
                                         this@EncodeContactActivity,

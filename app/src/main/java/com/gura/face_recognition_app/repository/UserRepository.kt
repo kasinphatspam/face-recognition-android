@@ -3,44 +3,67 @@ package com.gura.face_recognition_app.repository
 import android.content.Context
 import android.text.TextUtils
 import android.util.Log
-import com.gura.face_recognition_app.api.BackendAPI
+import com.gura.face_recognition_app.data.api.BackendAPI
+import com.gura.face_recognition_app.data.model.User
 import com.gura.face_recognition_app.helper.RetrofitHelper
-import com.gura.face_recognition_app.model.UserInformationResponse
 import retrofit2.Response
 
 class UserRepository(val context: Context) {
 
     private val api = RetrofitHelper.getInstance(context).create(BackendAPI::class.java)
 
-    interface UserInformationInterface {
-        fun onCompleted(response: Response<UserInformationResponse>)
+    interface GetUserInterface {
+        fun onResponse(response: Response<User>)
+        fun onFailure(error: String)
     }
 
-    interface CheckOrganizationInterface {
-        fun isEmpty()
+    interface UpdateUserInterface {
+        fun onResponse(message: String)
+        fun onFailure(error: String)
     }
-    suspend fun getCurrentUser(listener: UserInformationInterface) {
+
+    interface DeleteUserInterface {
+        fun onResponse(message: String)
+        fun onFailure(error: String)
+    }
+
+    // Get current user
+    suspend fun loadCurrentUserAsync(listener: GetUserInterface) {
         val authRepository = AuthRepository(context)
         val response = api.getUserById(authRepository.currentUser())
 
         if (response.isSuccessful) {
-            listener.onCompleted(response)
+            listener.onResponse(response)
+            return
         }
+        listener.onFailure(response.raw().message)
     }
 
-    // Check if employees have joined the organization.
-    suspend fun checkOrganizationIsEmpty(listener: CheckOrganizationInterface) {
-        val authRepository = AuthRepository(context)
-        val response = api.getUserById(authRepository.currentUser())
+    // Get user data by id
+    suspend fun loadUserById(id: Int, listener: GetUserInterface) {
+        val response = api.getUserById(id)
 
         if (response.isSuccessful) {
-            Log.d("CheckIsEmpty",response.body()!!.organizationId.toString())
-            if(TextUtils.isEmpty(response.body()!!.organizationId.toString()) ||
-                response.body()!!.organizationId.toString() == "0" ||
-                response.body()!!.organizationId.toString() == "null"){
-                listener.isEmpty()
-            }
+            listener.onResponse(response)
+            return
         }
+        listener.onFailure(response.raw().message)
+    }
+
+    // Update user data by id
+    fun updateUserById(id: Int, data: User, listener: UpdateUserInterface) {
+        val response = api.update(id, data)
+
+        if (response.isSuccessful) {
+            listener.onResponse(response.body()!!.message)
+            return
+        }
+        listener.onFailure(response.raw().message)
+    }
+
+    // Delete user account by id
+    fun deleteUserById(id: Int) {
+
     }
 
 }

@@ -9,9 +9,9 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.core.widget.doOnTextChanged
 import androidx.lifecycle.lifecycleScope
 import com.chaos.view.PinView
-import com.gura.face_recognition_app.helper.DisplayComponentHelper
+import com.gura.face_recognition_app.helper.WindowHelper
 import com.gura.face_recognition_app.repository.OrganizationRepository
-import com.gura.face_recognition_app.view.MainActivity
+import com.gura.face_recognition_app.view.activity.MainActivity
 import kotlinx.coroutines.launch
 
 
@@ -24,8 +24,11 @@ class JoinOrganizationActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_join_organization)
 
-        val displayComponentHelper = DisplayComponentHelper(this@JoinOrganizationActivity,window)
-        displayComponentHelper.changeStatusBarColor(R.color.white)
+        // Initialize helper for customizing display component
+        val window = WindowHelper(this, window)
+        window.statusBarColor = R.color.white
+        window.allowNightMode = false
+        window.publish()
 
         passcodePinView = findViewById(R.id.passcodePinView)
         confirmButton = findViewById(R.id.confirmButton)
@@ -74,7 +77,7 @@ class JoinOrganizationActivity : AppCompatActivity() {
         val app = App.instance
         lifecycleScope.launch {
             organizationRepository.join(app.userId!!, passcode, object: OrganizationRepository.JoinOrganizationInterface{
-                override fun onCompleted() {
+                override fun onResponse() {
                     val intent = Intent(this@JoinOrganizationActivity, MainActivity::class.java)
                     startActivity(intent)
                 }

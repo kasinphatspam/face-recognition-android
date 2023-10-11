@@ -1,4 +1,4 @@
-package com.gura.face_recognition_app.view
+package com.gura.face_recognition_app.view.activity
 
 import android.annotation.SuppressLint
 import android.content.Intent
@@ -9,7 +9,7 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.app.AppCompatDelegate
 import androidx.lifecycle.ViewModelProvider
 import com.gura.face_recognition_app.R
-import com.gura.face_recognition_app.helper.DisplayComponentHelper
+import com.gura.face_recognition_app.helper.WindowHelper
 import com.gura.face_recognition_app.viewmodel.AppViewModelFactory
 import com.gura.face_recognition_app.viewmodel.SplashActivityViewModel
 
@@ -27,9 +27,10 @@ class SplashActivity : AppCompatActivity() {
         setContentView(R.layout.activity_splash)
 
         // Initialize helper for customizing display component
-        val displayComponentHelper = DisplayComponentHelper(this@SplashActivity, window)
-        displayComponentHelper.changeStatusBarColor(R.color.white)
-        AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_NO)
+        val window = WindowHelper(this, window)
+        window.statusBarColor = R.color.white
+        window.allowNightMode = false
+        window.publish()
 
         // View Model instance
         factory = AppViewModelFactory(application)

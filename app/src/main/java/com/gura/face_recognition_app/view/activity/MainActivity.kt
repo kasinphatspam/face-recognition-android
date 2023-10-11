@@ -1,10 +1,10 @@
-package com.gura.face_recognition_app.view
+package com.gura.face_recognition_app.view.activity
 
 import android.annotation.SuppressLint
 import android.content.Intent
 import android.os.Bundle
+import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
-import androidx.appcompat.app.AppCompatDelegate
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.add
 import androidx.fragment.app.commit
@@ -12,10 +12,11 @@ import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
 import com.gura.face_recognition_app.JoinOrganizationActivity
 import com.gura.face_recognition_app.R
-import com.gura.face_recognition_app.fragment.ContactFragment
-import com.gura.face_recognition_app.fragment.DashboardFragment
-import com.gura.face_recognition_app.helper.DisplayComponentHelper
+import com.gura.face_recognition_app.view.fragment.ContactFragment
+import com.gura.face_recognition_app.view.fragment.DashboardFragment
+import com.gura.face_recognition_app.helper.WindowHelper
 import com.gura.face_recognition_app.viewmodel.AppViewModelFactory
+import com.gura.face_recognition_app.viewmodel.ShareFragmentViewModel
 import com.gura.face_recognition_app.viewmodel.MainActivityViewModel
 import kotlinx.coroutines.launch
 import me.ibrahimsn.lib.SmoothBottomBar
@@ -24,8 +25,8 @@ import me.ibrahimsn.lib.SmoothBottomBar
 class MainActivity : AppCompatActivity(), DashboardFragment.SearchClickListener {
 
     private lateinit var viewModel: MainActivityViewModel
+    private lateinit var fragmentViewModel: ShareFragmentViewModel
     private lateinit var factory: AppViewModelFactory
-
     private lateinit var bottomBar: SmoothBottomBar
 
     @SuppressLint("MissingInflatedId")
@@ -34,21 +35,24 @@ class MainActivity : AppCompatActivity(), DashboardFragment.SearchClickListener 
         setContentView(R.layout.activity_main)
 
         // Initialize helper for customizing display component
-        val displayComponentHelper = DisplayComponentHelper(this@MainActivity, window)
-        displayComponentHelper.changeStatusBarColor(R.color.white)
-        AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_NO)
+        val window = WindowHelper(this, window)
+        window.statusBarColor = R.color.white
+        window.allowNightMode = false
+        window.publish()
 
         // View Model instance
         factory = AppViewModelFactory(application)
         viewModel = ViewModelProvider(this, factory)[MainActivityViewModel::class.java]
+        fragmentViewModel = ViewModelProvider(this, factory)[ShareFragmentViewModel::class.java]
 
         // Check if the account has joined company
         lifecycleScope.launch {
-            viewModel.checkedCompany()
+            viewModel.getCurrentOrganization()
         }
 
-        viewModel.checkOrganizationIsEmpty.observe(this@MainActivity){
-            if(it){
+        viewModel.command.observe(this){
+            Toast.makeText(this,it.cmd,Toast.LENGTH_SHORT).show()
+            if(it.cmd == "NOT_FOUND_ORGANIZATION"){
                 val intent = Intent(this,JoinOrganizationActivity::class.java)
                 finish()
                 startActivity(intent)

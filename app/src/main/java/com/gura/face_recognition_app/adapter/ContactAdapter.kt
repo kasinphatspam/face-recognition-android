@@ -5,11 +5,10 @@ import android.content.Intent
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.ImageView
 import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
 import com.gura.face_recognition_app.EncodeContactActivity
-import com.gura.face_recognition_app.ItemsViewModel
+import com.gura.face_recognition_app.viewmodel.ItemsViewModel
 import com.gura.face_recognition_app.R
 import com.squareup.picasso.Picasso
 import de.hdodenhof.circleimageview.CircleImageView

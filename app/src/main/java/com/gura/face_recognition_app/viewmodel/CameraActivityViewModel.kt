@@ -9,12 +9,12 @@ import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import com.gura.face_recognition_app.App
 import com.gura.face_recognition_app.RecognitionCommand
-import com.gura.face_recognition_app.model.FaceRecognitionResponse
-import com.gura.face_recognition_app.repository.RecognitionRepository
+import com.gura.face_recognition_app.recognition.model.FaceRecognitionResponse
+import com.gura.face_recognition_app.recognition.RecognitionHelper
+import com.gura.face_recognition_app.recognition.RecognitionRepository
 
 class CameraActivityViewModel(val application: Application) : ViewModel() {
 
-    private val recognitionRepository = RecognitionRepository(application)
     private val app = App.instance
     var recognitionCommand = MutableLiveData<RecognitionCommand>()
 
@@ -37,10 +37,13 @@ class CameraActivityViewModel(val application: Application) : ViewModel() {
                 scaledBitmap.height, matrix, true
             )
 
-        val base64 = recognitionRepository.convertImageToBase64(rotatedBitmap)
-        recognitionRepository.startFaceRecognition(app.userId!!, base64,
+        val recognitionHelper = RecognitionHelper(application)
+        recognitionHelper.load(rotatedBitmap)
+        recognitionHelper.setTarget(app.userId!!, null)
+
+        recognitionHelper.recognize(
             object : RecognitionRepository.RecognitionInterface {
-                override fun onCompleted(faceRecognitionResponse: FaceRecognitionResponse) {
+                override fun onResponse(faceRecognitionResponse: FaceRecognitionResponse) {
                     recognitionCommand.apply {
                         value = RecognitionCommand(
                             "RECOGNITION_COMPLETED",

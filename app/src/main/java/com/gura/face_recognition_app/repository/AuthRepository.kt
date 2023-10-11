@@ -1,30 +1,32 @@
 package com.gura.face_recognition_app.repository
 
 import android.content.Context
+import android.util.Log
+import com.google.android.gms.common.internal.service.Common
 import com.gura.face_recognition_app.App
-import com.gura.face_recognition_app.api.BackendAPI
+import com.gura.face_recognition_app.data.api.BackendAPI
+import com.gura.face_recognition_app.data.request.LoginRequest
+import com.gura.face_recognition_app.data.request.RegisterRequest
+import com.gura.face_recognition_app.data.response.LoginResponse
+import com.gura.face_recognition_app.data.response.RegisterResponse
 import com.gura.face_recognition_app.helper.RetrofitHelper
 import com.gura.face_recognition_app.helper.SharePreferencesHelper
-import com.gura.face_recognition_app.model.AuthLoginRequest
-import com.gura.face_recognition_app.model.AuthLoginResponse
-import com.gura.face_recognition_app.model.AuthRegisterRequest
-import com.gura.face_recognition_app.model.AuthRegisterResponse
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
+import org.json.JSONObject
 import retrofit2.Response
+
 
 class AuthRepository(val context: Context) {
 
     private val api = RetrofitHelper.getInstance(context).create(BackendAPI::class.java)
 
     interface AuthLoginInterface {
-        fun onCompleted(response: Response<AuthLoginResponse>)
-        fun onFailed()
+        fun onResponse(response: Response<LoginResponse>)
+        fun onFailure(error: String)
     }
 
     interface AuthRegisterInterface {
-        fun onCompleted(response: Response<AuthRegisterResponse>)
+        fun onResponse(response: Response<RegisterResponse>)
+        fun onFailure(error: String)
     }
 
     fun currentUser(): Int {
@@ -44,28 +46,28 @@ class AuthRepository(val context: Context) {
         preferences.edit().putInt("userId", userId).apply()
     }
 
-    suspend fun login(email: String, password: String, listener: AuthLoginInterface) {
-        val authLoginRequest = AuthLoginRequest(email, password)
-        val response = api.login(authLoginRequest)
+    suspend fun login(data: LoginRequest, listener: AuthLoginInterface) {
+        val response = api.login(data)
 
         if (response!!.isSuccessful) {
             updateUserId(response.body()!!.userId)
-            listener.onCompleted(response)
+            listener.onResponse(response)
             return
         }
-        listener.onFailed()
+        val errorBody = response.errorBody()!!.string()
+        listener.onFailure(errorBody)
+        Log.e("AuthRepository", errorBody)
     }
 
-    suspend fun register(
-        email: String, password: String, firstname: String, lastname: String,
-        personalId: String, listener: AuthRegisterInterface
-    ) {
-        val authRegisterRequest = AuthRegisterRequest(
-            email, password, firstname, lastname, personalId
-        )
-        val response = api.register(authRegisterRequest)
+    suspend fun register(data: RegisterRequest, listener: AuthRegisterInterface) {
+        val response = api.register(data)
+
         if (response!!.isSuccessful) {
-            listener.onCompleted(response)
+            listener.onResponse(response)
+            return
         }
+        val errorBody = response.errorBody()!!.string()
+        listener.onFailure(errorBody)
+        Log.e("AuthRepository", errorBody)
     }
 }

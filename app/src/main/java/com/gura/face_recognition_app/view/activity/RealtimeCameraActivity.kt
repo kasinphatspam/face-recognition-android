@@ -1,16 +1,14 @@
-package com.gura.face_recognition_app.view
+package com.gura.face_recognition_app.view.activity
 
 import android.Manifest
 import android.annotation.SuppressLint
 import android.content.Context
 import android.content.pm.PackageManager
-import android.graphics.Bitmap
 import android.graphics.Matrix
 import android.graphics.SurfaceTexture
 import android.hardware.camera2.CameraCaptureSession
 import android.hardware.camera2.CameraDevice
 import android.hardware.camera2.CameraManager
-import android.os.Build
 import android.os.Bundle
 import android.os.Handler
 import android.os.HandlerThread
@@ -23,7 +21,6 @@ import android.view.View
 import android.view.WindowManager
 import android.widget.TextView
 import android.widget.Toast
-import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
@@ -32,16 +29,9 @@ import androidx.lifecycle.lifecycleScope
 import com.google.android.material.bottomsheet.BottomSheetBehavior
 import com.google.android.material.bottomsheet.BottomSheetBehavior.BottomSheetCallback
 import com.google.android.material.bottomsheet.BottomSheetDialog
-import com.google.mlkit.vision.common.InputImage
-import com.google.mlkit.vision.face.FaceDetection
-import com.google.mlkit.vision.face.FaceDetectorOptions
-import com.gura.face_recognition_app.App
 import com.gura.face_recognition_app.R
-import com.gura.face_recognition_app.helper.DisplayComponentHelper
-import com.gura.face_recognition_app.model.FaceRecognitionResponse
-import com.gura.face_recognition_app.repository.RecognitionRepository
+import com.gura.face_recognition_app.helper.WindowHelper
 import com.gura.face_recognition_app.viewmodel.AppViewModelFactory
-import com.gura.face_recognition_app.viewmodel.CameraActivityViewModel
 import com.gura.face_recognition_app.viewmodel.RealtimeCameraActivityViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -90,18 +80,20 @@ class RealtimeCameraActivity : AppCompatActivity() {
 
         // Change color of status bar and navigation bar to black
         supportActionBar?.hide()
-        window.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
-        val displayComponentHelper = DisplayComponentHelper(this,window)
-        displayComponentHelper.apply {
-            changeStatusBarColor(R.color.black)
-            changeNavigationBarColor(R.color.black)
-        }
+        // Initialize helper for customizing display component
+        val window = WindowHelper(this, window)
+        window.statusBarColor = R.color.black
+        window.navigationBarColor = R.color.black
+        window.allowNightMode = false
+        window.keepScreenOn = true
+        window.publish()
 
         // Check camera permissions if all permission granted
         // start camera else ask for the permission
         if (!allPermissionsGranted()) {
             ActivityCompat.requestPermissions(this,
-                REQUIRED_PERMISSIONS, REQUEST_CODE_PERMISSIONS)
+                REQUIRED_PERMISSIONS, REQUEST_CODE_PERMISSIONS
+            )
         }
 
         // View Model instance
@@ -129,7 +121,8 @@ class RealtimeCameraActivity : AppCompatActivity() {
                     openCamera()
                 } else {
                     ActivityCompat.requestPermissions(this@RealtimeCameraActivity,
-                        REQUIRED_PERMISSIONS, REQUEST_CODE_PERMISSIONS)
+                        REQUIRED_PERMISSIONS, REQUEST_CODE_PERMISSIONS
+                    )
                 }
             }
             override fun onSurfaceTextureSizeChanged(p0: SurfaceTexture, p1: Int, p2: Int) {}
@@ -171,9 +164,9 @@ class RealtimeCameraActivity : AppCompatActivity() {
                     stopRepeatingTask()
                     nameTextView.text =
                         "${it.response.contact.firstname} ${it.response.contact.lastname}"
-                    organizationNameTextView.text = it.response.contact.organizationName
-                    emailTextView.text = it.response.contact.email
-                    alternateEmailTextView.text = it.response.contact.alternateEmail
+                    organizationNameTextView.text = it.response.contact.contactCompany
+                    emailTextView.text = it.response.contact.email1
+                    alternateEmailTextView.text = it.response.contact.email2
                     officePhoneTextView.text = it.response.contact.officePhone
                     telephoneTextView.text = it.response.contact.mobile
                     facebookTextView.text = it.response.contact.facebook
@@ -246,9 +239,6 @@ class RealtimeCameraActivity : AppCompatActivity() {
             if (allPermissionsGranted()) {
                 // do something if permission is allowed
             } else {
-                // If permissions are not granted,
-                // present a toast to notify the user that
-                // the permissions were not granted.
                 Toast.makeText(this,
                     "Permissions not granted by the user.", Toast.LENGTH_SHORT).show()
                 finish()

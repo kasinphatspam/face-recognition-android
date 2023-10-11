@@ -5,9 +5,9 @@ import android.os.Bundle
 import android.widget.Button
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.edit
-import com.gura.face_recognition_app.helper.DisplayComponentHelper
+import com.gura.face_recognition_app.helper.WindowHelper
 import com.gura.face_recognition_app.helper.SharePreferencesHelper
-import com.gura.face_recognition_app.view.LoginActivity
+import com.gura.face_recognition_app.view.activity.LoginActivity
 
 class SettingActivity : AppCompatActivity() {
 
@@ -17,8 +17,11 @@ class SettingActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_setting)
 
-        val displayComponentHelper = DisplayComponentHelper(this,window)
-        displayComponentHelper.changeStatusBarColor(R.color.white)
+        // Initialize helper for customizing display component
+        val window = WindowHelper(this, window)
+        window.statusBarColor = R.color.white
+        window.allowNightMode = false
+        window.publish()
 
         logoutButton = findViewById(R.id.logoutButton)
         logoutButton.setOnClickListener {

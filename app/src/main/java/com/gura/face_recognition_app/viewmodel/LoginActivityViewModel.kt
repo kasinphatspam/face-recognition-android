@@ -4,7 +4,8 @@ import android.app.Application
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import com.gura.face_recognition_app.AuthCommand
-import com.gura.face_recognition_app.model.AuthLoginResponse
+import com.gura.face_recognition_app.data.request.LoginRequest
+import com.gura.face_recognition_app.data.response.LoginResponse
 import com.gura.face_recognition_app.repository.AuthRepository
 import retrofit2.Response
 
@@ -14,22 +15,23 @@ class LoginActivityViewModel(application: Application) :
     private val authRepository = AuthRepository(application)
     var authCmd = MutableLiveData<AuthCommand>()
 
-    suspend fun login (email:String, password: String){
-        authRepository.login(email,password,
-            object: AuthRepository.AuthLoginInterface{
-                override fun onCompleted(response: Response<AuthLoginResponse>) {
-                    setUserId(response.body()!!.userId)
-                    authCmd.apply {
-                        value = AuthCommand("AUTH_LOGIN_COMPLETED")
-                    }
+    suspend fun login (email:String, password: String) {
+        val data = LoginRequest(email, password)
+        authRepository.login(data, object: AuthRepository.AuthLoginInterface{
+            override fun onResponse(response: Response<LoginResponse>) {
+                setUserId(response.body()!!.userId)
+                authCmd.apply {
+                    value = AuthCommand("AUTH_LOGIN_COMPLETED")
                 }
-                override fun onFailed() {
-                    authCmd.apply {
-                        value = AuthCommand("AUTH_LOGIN_FAILED")
-                    }
+            }
+            override fun onFailure() {
+                authCmd.apply {
+                    value = AuthCommand("AUTH_LOGIN_FAILED")
                 }
-            })
+            }
+        })
     }
+
     fun setUserId(userId: Int){
         authRepository.updateUserId(userId)
     }

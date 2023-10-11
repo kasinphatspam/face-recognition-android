@@ -43,7 +43,7 @@ class ShareFragmentViewModel(private val application: Application): ViewModel() 
             Log.e("DashboardViewModel", response.raw().message)
         }
 
-        override fun onFailure() {
+        override fun onFailure(error: String) {
             TODO("Not yet implemented")
         }
     }

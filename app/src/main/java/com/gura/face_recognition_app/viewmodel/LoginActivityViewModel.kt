@@ -24,7 +24,8 @@ class LoginActivityViewModel(application: Application) :
                     value = AuthCommand("AUTH_LOGIN_COMPLETED")
                 }
             }
-            override fun onFailure() {
+
+            override fun onFailure(error: String) {
                 authCmd.apply {
                     value = AuthCommand("AUTH_LOGIN_FAILED")
                 }

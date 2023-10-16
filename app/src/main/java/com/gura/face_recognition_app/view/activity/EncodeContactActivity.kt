@@ -1,9 +1,8 @@
-package com.gura.face_recognition_app
+package com.gura.face_recognition_app.view.activity
 
 import android.Manifest
 import android.content.pm.PackageManager
 import android.graphics.Bitmap
-import android.graphics.Matrix
 import android.net.Uri
 import android.os.Build
 import androidx.appcompat.app.AppCompatActivity
@@ -22,13 +21,15 @@ import androidx.camera.lifecycle.ProcessCameraProvider
 import androidx.camera.view.PreviewView
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
+import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
 import com.google.android.material.bottomsheet.BottomSheetBehavior
 import com.google.android.material.bottomsheet.BottomSheetDialog
+import com.gura.face_recognition_app.App
+import com.gura.face_recognition_app.R
 import com.gura.face_recognition_app.helper.WindowHelper
-import com.gura.face_recognition_app.recognition.model.EncodeContactImageResponse
-import com.gura.face_recognition_app.recognition.RecognitionHelper
-import com.gura.face_recognition_app.recognition.RecognitionRepository
+import com.gura.face_recognition_app.viewmodel.AppViewModelFactory
+import com.gura.face_recognition_app.viewmodel.EncodeContactActivityViewModel
 import com.hluhovskyi.camerabutton.CameraButton
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -48,6 +49,9 @@ class EncodeContactActivity : AppCompatActivity() {
     private lateinit var loadingBottomSheetDialog: BottomSheetDialog
     private var contactId: Int = 0
 
+    private lateinit var viewModel: EncodeContactActivityViewModel
+    private lateinit var factory: AppViewModelFactory
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_encode_contact)
@@ -63,6 +67,11 @@ class EncodeContactActivity : AppCompatActivity() {
         window.allowNightMode = false
         window.keepScreenOn = true
         window.publish()
+
+        // View Model instance
+        factory = AppViewModelFactory(application)
+        viewModel = ViewModelProvider(this, factory)[EncodeContactActivityViewModel::class.java]
+
 
         // Check camera permissions if all permission granted
         // start camera else ask for the permission
@@ -109,6 +118,21 @@ class EncodeContactActivity : AppCompatActivity() {
         val loadingBottomSheetBehavior: BottomSheetBehavior<*> =
             BottomSheetBehavior.from(loadingBottomSheetView.parent as View)
         loadingBottomSheetBehavior.setBottomSheetCallback(bottomSheetCallback)
+
+        viewModel.cmd.observe(this) {
+            if(it.cmd == "FACE_NOT_FOUND") {
+                Toast.makeText(
+                    this@EncodeContactActivity,
+                    "Face not found please try again.",
+                    Toast.LENGTH_SHORT).show()
+            } else if (it.cmd == "ENCODE_SUCCESS"){
+                Toast.makeText(
+                    this@EncodeContactActivity,
+                    "Encoded successfully",
+                    Toast.LENGTH_SHORT).show()
+            }
+            loadingBottomSheetDialog.cancel()
+        }
     }
 
     private fun takePhoto() {
@@ -142,30 +166,9 @@ class EncodeContactActivity : AppCompatActivity() {
                 override fun onImageSaved(output: ImageCapture.OutputFileResults) {
                     val savedUri = Uri.fromFile(photoFile)
 
-                    val matrix = Matrix()
-                    matrix.setRotate(90f)
-
                     val bitmap: Bitmap = MediaStore
                         .Images.Media
                         .getBitmap(this@EncodeContactActivity.contentResolver, savedUri)
-                    val scaledBitmap = Bitmap
-                        .createScaledBitmap(
-                            bitmap,
-                            500,
-                            500,
-                            true
-                        )
-                    val rotatedBitmap = Bitmap
-                        .createBitmap(
-                            scaledBitmap,
-                            0,
-                            0,
-                            scaledBitmap.width,
-                            scaledBitmap.height,
-                            matrix,
-                            true
-                        )
-                    val recognitionHelper = RecognitionHelper(this@EncodeContactActivity)
 
                     lifecycleScope.launch(Dispatchers.Main) {
                         if(contactId == 0){
@@ -173,26 +176,8 @@ class EncodeContactActivity : AppCompatActivity() {
                             loadingBottomSheetDialog.cancel()
                             finish()
                         }
-                        recognitionHelper.load(rotatedBitmap)
-                        recognitionHelper.setTarget(userId!!, contactId)
-                        recognitionHelper.train(
-                            object : RecognitionRepository.EncodeInterface{
-                            override fun onResponse(encodeContactImageResponse: EncodeContactImageResponse) {
-                                if(encodeContactImageResponse.encodedId == (-1).toString()){
-                                    Toast.makeText(
-                                        this@EncodeContactActivity,
-                                        "Face not found please try again.",
-                                        Toast.LENGTH_SHORT).show()
-                                }else{
-                                    Toast.makeText(
-                                        this@EncodeContactActivity,
-                                        "Encoded successfully",
-                                        Toast.LENGTH_SHORT).show()
-                                }
-                                loadingBottomSheetDialog.cancel()
-                            }
 
-                        })
+                        viewModel.send(bitmap, contactId)
                     }
 
                     val fileDelete = File(savedUri.path!!)

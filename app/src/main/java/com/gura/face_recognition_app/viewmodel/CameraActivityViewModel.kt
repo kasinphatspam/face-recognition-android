@@ -18,7 +18,7 @@ class CameraActivityViewModel(val application: Application) : ViewModel() {
     private val app = App.instance
     var recognitionCommand = MutableLiveData<RecognitionCommand>()
 
-    suspend fun sendImageForRecognizing(uri: Uri) {
+    suspend fun send(uri: Uri) {
 
         val bitmap: Bitmap = MediaStore
             .Images.Media

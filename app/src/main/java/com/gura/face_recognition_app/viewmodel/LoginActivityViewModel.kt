@@ -19,7 +19,7 @@ class LoginActivityViewModel(application: Application) :
         val data = LoginRequest(email, password)
         authRepository.login(data, object: AuthRepository.AuthLoginInterface{
             override fun onResponse(response: Response<LoginResponse>) {
-                setUserId(response.body()!!.userId)
+                setUserId(response.body()!!.id)
                 authCmd.apply {
                     value = AuthCommand("AUTH_LOGIN_COMPLETED")
                 }

@@ -6,17 +6,21 @@ import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
 import androidx.appcompat.app.AppCompatActivity
-import androidx.appcompat.app.AppCompatDelegate
 import androidx.lifecycle.ViewModelProvider
+import androidx.lifecycle.lifecycleScope
 import com.gura.face_recognition_app.R
 import com.gura.face_recognition_app.helper.WindowHelper
 import com.gura.face_recognition_app.viewmodel.AppViewModelFactory
 import com.gura.face_recognition_app.viewmodel.SplashActivityViewModel
+import kotlinx.coroutines.launch
 
 @SuppressLint("CustomSplashScreen")
 class SplashActivity : AppCompatActivity() {
 
-    private val mInterval: Long = 2000
+    companion object {
+        private const val INTERVAL = 2000L
+    }
+
     private var handler: Handler? = null
 
     private lateinit var viewModel: SplashActivityViewModel
@@ -27,55 +31,53 @@ class SplashActivity : AppCompatActivity() {
         setContentView(R.layout.activity_splash)
 
         // Initialize helper for customizing display component
-        val window = WindowHelper(this, window)
-        window.statusBarColor = R.color.white
-        window.allowNightMode = false
-        window.publish()
+        WindowHelper(this, window).apply {
+            statusBarColor = R.color.white
+            allowNightMode = false
+            publish()
+        }
 
-        // View Model instance
+        // ViewModel instance
         factory = AppViewModelFactory(application)
         viewModel = ViewModelProvider(this, factory)[SplashActivityViewModel::class.java]
         handler = Handler(Looper.getMainLooper())
         startRepeatingTask()
 
-        // Change the intent activity when the server is online.
-        viewModel.isConnected.observe(this){
-            if(it){
+        viewModel.command.observe(this) { command ->
+            when (command.cmd) {
+                "NOT_FOUND_ORGANIZATION" -> navigateToActivity(JoinOrganizationActivity::class.java)
+                else -> navigateToActivity(MainActivity::class.java)
+            }
+        }
+
+        viewModel.isConnected.observe(this) { isConnected ->
+            if (isConnected) {
                 stopRepeatingTask()
-                // Read file and check if userId in Share Preferences is not null
-                if (viewModel.getCurrentSignedInAccount() != -1) {
+                if (viewModel.currentUser() != -1) {
                     viewModel.setUserId()
-                    // Move to main activity and close all previous activity
-                    val intent = Intent(
-                        this@SplashActivity, MainActivity::class.java
-                    )
-                    intent.flags = Intent.FLAG_ACTIVITY_CLEAR_TOP
-                    startActivity(intent)
-                    finish()
+                    lifecycleScope.launch {
+                        viewModel.hasJoinedOrganization()
+                    }
                 } else {
-                    val intent = Intent(
-                        this@SplashActivity, LoginActivity::class.java
-                    )
-                    intent.flags = Intent.FLAG_ACTIVITY_CLEAR_TOP
-                    startActivity(intent)
-                    finish()
+                    navigateToActivity(LoginActivity::class.java)
                 }
             }
         }
     }
 
-    // Create loop for checking preparation of connection
-    private var statusChecker: Runnable = object : Runnable {
-        @SuppressLint("SetTextI18n")
+    private fun navigateToActivity(activityClass: Class<*>) {
+        val intent = Intent(this, activityClass)
+        intent.flags = Intent.FLAG_ACTIVITY_CLEAR_TOP
+        startActivity(intent)
+        finish()
+    }
+
+    private val statusChecker: Runnable = object : Runnable {
         override fun run() {
-            try {
-                if(viewModel.isNetworkConnected()){
-                    viewModel.checkServerConnection()
-                }
-            } finally {
-                // Add time delay
-                handler!!.postDelayed(this, mInterval)
+            if (viewModel.isNetworkConnected()) {
+                viewModel.checkServerStatus()
             }
+            handler?.postDelayed(this, INTERVAL)
         }
     }
 
@@ -84,12 +86,11 @@ class SplashActivity : AppCompatActivity() {
     }
 
     private fun stopRepeatingTask() {
-        handler!!.removeCallbacks(statusChecker)
+        handler?.removeCallbacks(statusChecker)
     }
 
     override fun onDestroy() {
         super.onDestroy()
         stopRepeatingTask()
     }
-
 }

@@ -40,12 +40,9 @@ class ShareFragmentViewModel(private val application: Application): ViewModel() 
                     value = response.body()
                 }
             }
-            Log.e("DashboardViewModel", response.raw().message)
         }
 
-        override fun onFailure(error: String) {
-            TODO("Not yet implemented")
-        }
+        override fun onFailure(error: String) {}
     }
 
     // Get organization contact

@@ -235,7 +235,7 @@ open class CameraActivity : AppCompatActivity() {
                     val savedUri = Uri.fromFile(photoFile)
 
                     lifecycleScope.launch {
-                        viewModel.sendImageForRecognizing(savedUri)
+                        viewModel.send(savedUri)
                     }
 
                     val fileDelete = File(savedUri.path!!)

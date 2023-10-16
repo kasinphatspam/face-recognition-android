@@ -1,4 +1,4 @@
-package com.gura.face_recognition_app
+package com.gura.face_recognition_app.view.activity
 
 import android.content.Intent
 import android.os.Bundle
@@ -7,11 +7,13 @@ import android.view.inputmethod.InputMethodManager
 import android.widget.Button
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.widget.doOnTextChanged
+import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
 import com.chaos.view.PinView
+import com.gura.face_recognition_app.R
 import com.gura.face_recognition_app.helper.WindowHelper
-import com.gura.face_recognition_app.repository.OrganizationRepository
-import com.gura.face_recognition_app.view.activity.MainActivity
+import com.gura.face_recognition_app.viewmodel.AppViewModelFactory
+import com.gura.face_recognition_app.viewmodel.JoinOrganizationActivityViewModel
 import kotlinx.coroutines.launch
 
 
@@ -19,6 +21,8 @@ class JoinOrganizationActivity : AppCompatActivity() {
 
     private lateinit var passcodePinView: PinView
     private lateinit var confirmButton: Button
+    private lateinit var factory: AppViewModelFactory
+    private lateinit var viewModel: JoinOrganizationActivityViewModel
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -29,6 +33,9 @@ class JoinOrganizationActivity : AppCompatActivity() {
         window.statusBarColor = R.color.white
         window.allowNightMode = false
         window.publish()
+
+        factory = AppViewModelFactory(application)
+        viewModel = ViewModelProvider(this, factory)[JoinOrganizationActivityViewModel::class.java]
 
         passcodePinView = findViewById(R.id.passcodePinView)
         confirmButton = findViewById(R.id.confirmButton)
@@ -45,6 +52,13 @@ class JoinOrganizationActivity : AppCompatActivity() {
 
         confirmButton.setOnClickListener {
             commit(passcodePinView.text.toString())
+        }
+
+        viewModel.cmd.observe(this) {
+            if (it.cmd == "JOIN_ORGANIZATION_SUCCESS"){
+                val intent = Intent(this@JoinOrganizationActivity, MainActivity::class.java)
+                startActivity(intent)
+            }
         }
 
     }
@@ -73,16 +87,8 @@ class JoinOrganizationActivity : AppCompatActivity() {
     }
 
     private fun commit(passcode: String){
-        val organizationRepository = OrganizationRepository(this)
-        val app = App.instance
         lifecycleScope.launch {
-            organizationRepository.join(app.userId!!, passcode, object: OrganizationRepository.JoinOrganizationInterface{
-                override fun onResponse() {
-                    val intent = Intent(this@JoinOrganizationActivity, MainActivity::class.java)
-                    startActivity(intent)
-                }
-
-            })
+            viewModel.commit(passcode)
         }
     }
 }

@@ -6,8 +6,8 @@ import com.gura.face_recognition_app.data.model.User
 data class LoginResponse (
     @SerializedName("message")
     var message: String,
-    @SerializedName("userId")
-    var userId: Int
+    @SerializedName("id")
+    var id: Int
 )
 
 data class RegisterResponse(

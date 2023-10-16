@@ -3,14 +3,12 @@ package com.gura.face_recognition_app.view.activity
 import android.annotation.SuppressLint
 import android.content.Intent
 import android.os.Bundle
-import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.add
 import androidx.fragment.app.commit
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
-import com.gura.face_recognition_app.JoinOrganizationActivity
 import com.gura.face_recognition_app.R
 import com.gura.face_recognition_app.view.fragment.ContactFragment
 import com.gura.face_recognition_app.view.fragment.DashboardFragment
@@ -44,20 +42,6 @@ class MainActivity : AppCompatActivity(), DashboardFragment.SearchClickListener 
         factory = AppViewModelFactory(application)
         viewModel = ViewModelProvider(this, factory)[MainActivityViewModel::class.java]
         fragmentViewModel = ViewModelProvider(this, factory)[ShareFragmentViewModel::class.java]
-
-        // Check if the account has joined company
-        lifecycleScope.launch {
-            viewModel.getCurrentOrganization()
-        }
-
-        viewModel.command.observe(this){
-            Toast.makeText(this,it.cmd,Toast.LENGTH_SHORT).show()
-            if(it.cmd == "NOT_FOUND_ORGANIZATION"){
-                val intent = Intent(this,JoinOrganizationActivity::class.java)
-                finish()
-                startActivity(intent)
-            }
-        }
 
         // Initialize the layout variable with view id
         bottomBar = findViewById(R.id.bottomBar)

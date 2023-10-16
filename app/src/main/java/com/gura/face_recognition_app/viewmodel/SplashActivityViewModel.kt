@@ -1,81 +1,77 @@
 package com.gura.face_recognition_app.viewmodel
 
 import android.app.Application
-import android.content.Context
-import android.net.ConnectivityManager
-import android.net.NetworkCapabilities
-import android.util.Log
-import androidx.lifecycle.AndroidViewModel
-import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.MutableLiveData
+import com.gura.face_recognition_app.Command
+import com.gura.face_recognition_app.data.model.Organization
 import com.gura.face_recognition_app.helper.NetworkHelper
 import com.gura.face_recognition_app.helper.SharePreferencesHelper
 import com.gura.face_recognition_app.repository.AuthRepository
 import com.gura.face_recognition_app.repository.ConnectionRepository
+import com.gura.face_recognition_app.repository.OrganizationRepository
 
+class SplashActivityViewModel(application: Application) : ViewModel() {
 
-class SplashActivityViewModel(private val application: Application) :
-    ViewModel() {
+    // Constants
+    companion object {
+        private const val KEY_USER_ID: String = "userId"
+    }
 
-    var isConnected = MutableLiveData<Boolean>(false)
+    // LiveData
+    var isConnected = MutableLiveData(false)
+    val command = MutableLiveData<Command>()
+
+    // Repositories and Helpers
+    private val networkHelper = NetworkHelper(application)
+    private val preferencesHelper = SharePreferencesHelper(application)
     private val connectionRepository = ConnectionRepository(application)
     private val authRepository = AuthRepository(application)
-    private val preferencesHelper = SharePreferencesHelper(application)
-    private val networkHelper = NetworkHelper(application)
+    private val organizationRepository = OrganizationRepository(application)
 
-    /* --------------------- Network Function -----------------------*/
+    // Network Status
     fun isNetworkConnected(): Boolean {
         return networkHelper.isNetworkConnected()
     }
 
-    /* --------------------- Connection Function -----------------------*/
-    fun checkServerConnection() {
-        var connection1 = false
-        var connection2 =false
-
-        connectionRepository.checkBackendServerStatus(
-            object : ConnectionRepository.CheckServerStatusInterface{
-            override fun onConnected() {
-                Log.d("Connection", "Server connection1 is connected")
-                connection1 = true
-                if(connection2){
-                    isConnected.apply {
-                        value = true
-                    }
-                }
-            }
-            override fun onDisconnected(errorMessage: String) {
-                connection1 = false
-            }
-        })
-        connectionRepository.checkMlServerStatus(
-            object : ConnectionRepository.CheckServerStatusInterface{
-            override fun onConnected() {
-                Log.d("Connection", "Server connection2 is connected")
-                connection2 = true
-                if(connection1){
-                    isConnected.apply {
-                        value = true
-                    }
-                }
-            }
-            override fun onDisconnected(errorMessage: String) {
-                connection2 = false
-            }
-        })
+    fun checkServerStatus() {
+        connectionRepository.checkBackendServerStatus(connectionListener)
     }
 
-    /* --------------------- Authentication Function -----------------------*/
-    fun getCurrentSignedInAccount(): Int {
+    // User Information
+    fun currentUser(): Int {
         return authRepository.currentUser()
     }
 
-    fun setUserId(): Boolean{
-        val userId = preferencesHelper.getInstance().getInt("userId",-1)
-        if(userId != -1){
+    suspend fun hasJoinedOrganization() {
+        organizationRepository.getCurrentOrganization(organizationListener)
+    }
+
+    fun setUserId() {
+        val userId = preferencesHelper.getInstance().getInt(KEY_USER_ID, -1)
+        if (userId != -1) {
             authRepository.updateUserId(userId)
-            return true
         }
-        return false
+    }
+
+    // Listeners
+    private val connectionListener = object : ConnectionRepository.CheckServerStatusInterface {
+        override fun onConnected() {
+            isConnected.value = true
+        }
+
+        override fun onDisconnected(errorMessage: String) {
+            isConnected.value = false
+        }
+    }
+
+    private val organizationListener = object : OrganizationRepository.OrganizationInformationInterface {
+        override fun onResponse(data: Organization) {
+            command.value = Command("FOUND_ORGANIZATION")
+        }
+
+        override fun onFailure(error: String) {
+            command.value = Command("NOT_FOUND_ORGANIZATION")
+        }
     }
 }

@@ -140,7 +140,7 @@ class RealtimeCameraActivity : AppCompatActivity() {
                             if(faces != null) {
                                 lifecycleScope.launch(Dispatchers.Main) {
                                     isOnProgress = true
-                                    viewModel.sendImageForRecognizing(bitmap)
+                                    viewModel.send(bitmap)
                                 }
                             }
                         }

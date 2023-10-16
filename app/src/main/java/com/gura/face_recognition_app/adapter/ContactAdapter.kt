@@ -7,7 +7,7 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
-import com.gura.face_recognition_app.EncodeContactActivity
+import com.gura.face_recognition_app.view.activity.EncodeContactActivity
 import com.gura.face_recognition_app.viewmodel.ItemsViewModel
 import com.gura.face_recognition_app.R
 import com.squareup.picasso.Picasso
@@ -28,7 +28,7 @@ class ContactAdapter(private val context: Context,
         holder.nameTextView.text = itemViewModel.name
         holder.companyTextView.text = itemViewModel.company
         holder.profileImageView.setOnClickListener {
-            val intent = Intent(context,EncodeContactActivity::class.java)
+            val intent = Intent(context, EncodeContactActivity::class.java)
             intent.putExtra("contactId",itemViewModel.id)
             context.startActivity(intent)
         }

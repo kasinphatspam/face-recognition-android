@@ -6,6 +6,7 @@ import android.content.res.Resources
 class App: Application() {
 
     var userId: Int? = null
+
     companion object {
         val instance = App()
     }

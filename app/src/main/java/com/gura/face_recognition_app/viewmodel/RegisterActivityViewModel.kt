@@ -26,8 +26,6 @@ class RegisterActivityViewModel(val application: Application): ViewModel() {
             }
         }
 
-        override fun onFailure(error: String) {
-            TODO("Not yet implemented")
-        }
+        override fun onFailure(error: String) {}
     }
 }

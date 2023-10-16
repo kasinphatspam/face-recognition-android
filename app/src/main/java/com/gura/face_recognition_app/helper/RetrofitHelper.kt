@@ -1,6 +1,7 @@
 package com.gura.face_recognition_app.helper
 
 import android.content.Context
+import android.util.Log
 import com.gura.face_recognition_app.R
 import okhttp3.OkHttpClient
 import retrofit2.Retrofit
@@ -13,7 +14,9 @@ object RetrofitHelper {
             .connectTimeout(5, TimeUnit.MINUTES)
             .readTimeout(45, TimeUnit.SECONDS)
             .writeTimeout(30, TimeUnit.SECONDS).build()
-        return Retrofit.Builder().baseUrl("http://${context.getString(R.string.backend_server_ip)}")
+
+        return Retrofit.Builder()
+            .baseUrl("http://${context.getString(R.string.backend_server_ip)}")
             .addConverterFactory(GsonConverterFactory.create())
             .client(client)
             .build()

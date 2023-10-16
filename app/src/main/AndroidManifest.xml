@@ -23,7 +23,7 @@
         android:usesCleartextTraffic="true">
 
         <activity
-            android:name=".EncodeContactActivity"
+            android:name=".view.activity.EncodeContactActivity"
             android:exported="false" />
         <activity
             android:name=".SettingActivity"
@@ -32,10 +32,10 @@
             android:name=".view.activity.RealtimeCameraActivity"
             android:exported="false" />
         <activity
-            android:name=".JoinOrganizationActivity"
+            android:name=".view.activity.JoinOrganizationActivity"
             android:exported="false" />
         <activity
-            android:name=".RegisterActivity"
+            android:name=".view.activity.RegisterActivity"
             android:exported="false" />
         <activity
             android:name=".view.activity.LoginActivity"

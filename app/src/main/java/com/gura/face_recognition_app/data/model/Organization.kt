@@ -8,7 +8,7 @@ data class Organization (
     var id: Int,
     @SerializedName("name")
     var name: String,
-    @SerializedName("code")
+    @SerializedName("passcode")
     var code: String,
     @SerializedName("codeCreatedTime")
     var codCreatedTime: Date,

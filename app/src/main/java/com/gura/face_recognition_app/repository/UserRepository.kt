@@ -61,9 +61,4 @@ class UserRepository(val context: Context) {
         listener.onFailure(response.raw().message)
     }
 
-    // Delete user account by id
-    fun deleteUserById(id: Int) {
-
-    }
-
 }

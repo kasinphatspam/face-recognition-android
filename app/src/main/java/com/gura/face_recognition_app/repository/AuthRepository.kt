@@ -50,7 +50,8 @@ class AuthRepository(val context: Context) {
         val response = api.login(data)
 
         if (response!!.isSuccessful) {
-            updateUserId(response.body()!!.userId)
+            updateUserId(response.body()!!.id)
+            Log.e("Auth", "Set user id ${response.body()}")
             listener.onResponse(response)
             return
         }

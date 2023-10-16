@@ -19,7 +19,7 @@ class RealtimeCameraActivityViewModel(private val application: Application): Vie
     private val app = App.instance
     var recognitionCommand = MutableLiveData<RecognitionCommand>()
 
-    suspend fun sendImageForRecognizing(bitmap: Bitmap) {
+    suspend fun send(bitmap: Bitmap) {
         val recognitionHelper = RecognitionHelper(application)
         recognitionHelper.load(bitmap)
         recognitionHelper.setTarget(app.userId!!, null)

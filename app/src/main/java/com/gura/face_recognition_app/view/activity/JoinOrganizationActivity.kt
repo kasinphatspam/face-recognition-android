@@ -16,9 +16,7 @@ import com.gura.face_recognition_app.viewmodel.AppViewModelFactory
 import com.gura.face_recognition_app.viewmodel.JoinOrganizationActivityViewModel
 import kotlinx.coroutines.launch
 
-
 class JoinOrganizationActivity : AppCompatActivity() {
-
     private lateinit var passcodePinView: PinView
     private lateinit var confirmButton: Button
     private lateinit var factory: AppViewModelFactory
@@ -28,65 +26,55 @@ class JoinOrganizationActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_join_organization)
 
-        // Initialize helper for customizing display component
+        // Initialize helper for customizing display components
         val window = WindowHelper(this, window)
         window.statusBarColor = R.color.white
         window.allowNightMode = false
         window.publish()
 
+        // Initialize ViewModel and Views
         factory = AppViewModelFactory(application)
         viewModel = ViewModelProvider(this, factory)[JoinOrganizationActivityViewModel::class.java]
-
         passcodePinView = findViewById(R.id.passcodePinView)
         confirmButton = findViewById(R.id.confirmButton)
         confirmButton.visibility = View.INVISIBLE
 
+        // Listen for changes in the pin input field
         passcodePinView.doOnTextChanged { text, start, before, count ->
-            if(text!!.length == 6){
+            if (text!!.length == 6) {
                 confirmButton.visibility = View.VISIBLE
                 closeKeyboard()
-            }else{
+            } else {
                 confirmButton.visibility = View.INVISIBLE
             }
         }
 
+        // Handle button click to commit the passcode
         confirmButton.setOnClickListener {
             commit(passcodePinView.text.toString())
         }
 
+        // Observe ViewModel commands
         viewModel.cmd.observe(this) {
-            if (it.cmd == "JOIN_ORGANIZATION_SUCCESS"){
+            if (it.cmd == "JOIN_ORGANIZATION_SUCCESS") {
+                // Redirect to the main activity on success
                 val intent = Intent(this@JoinOrganizationActivity, MainActivity::class.java)
                 startActivity(intent)
             }
         }
-
     }
 
+    // Function to close the keyboard
     private fun closeKeyboard() {
-        // this will give us the view
-        // which is currently focus
-        // in this layout
-        val view = this.currentFocus
-
-        // if nothing is currently
-        // focus then this will protect
-        // the app from crash
+        val view = currentFocus
         if (view != null) {
-
-            // now assign the system
-            // service to InputMethodManager
-            val manager = getSystemService(
-                INPUT_METHOD_SERVICE
-            ) as InputMethodManager
-            manager
-                .hideSoftInputFromWindow(
-                    view.windowToken, 0
-                )
+            val manager = getSystemService(INPUT_METHOD_SERVICE) as InputMethodManager
+            manager.hideSoftInputFromWindow(view.windowToken, 0)
         }
     }
 
-    private fun commit(passcode: String){
+    // Function to commit the passcode using a coroutine
+    private fun commit(passcode: String) {
         lifecycleScope.launch {
             viewModel.commit(passcode)
         }

@@ -5,13 +5,17 @@ import android.content.Intent
 import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
+import android.util.Log
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
+import com.gura.face_recognition_app.App
 import com.gura.face_recognition_app.R
 import com.gura.face_recognition_app.helper.WindowHelper
+import com.gura.face_recognition_app.services.AuthService
 import com.gura.face_recognition_app.viewmodel.AppViewModelFactory
 import com.gura.face_recognition_app.viewmodel.SplashActivityViewModel
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
 
 @SuppressLint("CustomSplashScreen")
@@ -19,6 +23,7 @@ class SplashActivity : AppCompatActivity() {
 
     companion object {
         private const val INTERVAL = 2000L
+        private const val TAG = "SplashActivity"
     }
 
     private var handler: Handler? = null
@@ -43,24 +48,25 @@ class SplashActivity : AppCompatActivity() {
         handler = Handler(Looper.getMainLooper())
         startRepeatingTask()
 
-        viewModel.command.observe(this) { command ->
-            when (command.cmd) {
-                "NOT_FOUND_ORGANIZATION" -> navigateToActivity(JoinOrganizationActivity::class.java)
-                else -> navigateToActivity(MainActivity::class.java)
-            }
-        }
+        val authService = AuthService(this)
+        Log.d(TAG,"SESSION ID: " +authService.getSessionId())
 
-        viewModel.isConnected.observe(this) { isConnected ->
-            if (isConnected) {
-                stopRepeatingTask()
-                if (viewModel.currentUser() != -1) {
-                    viewModel.setUserId()
-                    lifecycleScope.launch {
-                        viewModel.hasJoinedOrganization()
+        viewModel.command.observe(this) {
+
+            if (it.cmd == "ALREADY_LOGIN") {
+                val user = viewModel.user.value!!
+                Log.d(TAG, user.email)
+                // set global variables
+                App.instance.user = user
+                if (it != null) {
+                    if (user.organization != null) {
+                        navigateToActivity(MainActivity::class.java)
+                        return@observe
                     }
-                } else {
-                    navigateToActivity(LoginActivity::class.java)
+                    navigateToActivity(JoinOrganizationActivity::class.java)
                 }
+            } else if (it.cmd == "NOT_LOGIN") {
+                navigateToActivity(LoginActivity::class.java)
             }
         }
     }
@@ -75,7 +81,10 @@ class SplashActivity : AppCompatActivity() {
     private val statusChecker: Runnable = object : Runnable {
         override fun run() {
             if (viewModel.isNetworkConnected()) {
-                viewModel.checkServerStatus()
+                Log.d("SplashActivity", "--------------------------------------")
+                lifecycleScope.launch {
+                    viewModel.currentUser()
+                }
             }
             handler?.postDelayed(this, INTERVAL)
         }

@@ -15,3 +15,17 @@ data class OrganizationResponse (
     @SerializedName("organization")
     var organization: Organization
 )
+
+data class MessageResponse (
+    @SerializedName("message")
+    var message: String
+)
+
+data class ErrorResponse (
+    @SerializedName("statusCode")
+    var statusCode: String,
+    @SerializedName("message")
+    var message: String,
+    @SerializedName("error")
+    var error: String
+)

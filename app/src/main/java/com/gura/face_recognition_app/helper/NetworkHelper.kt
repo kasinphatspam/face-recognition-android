@@ -9,21 +9,22 @@ import android.util.Log
 class NetworkHelper(val application: Application) {
 
     fun isNetworkConnected(): Boolean {
-        val connectivityManager =
-            application.getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager?
-        val capabilities =
-            connectivityManager!!.getNetworkCapabilities(connectivityManager.activeNetwork)
-
-        if (capabilities!!.hasTransport(NetworkCapabilities.TRANSPORT_CELLULAR)) {
-            Log.i("Internet", "NetworkCapabilities.TRANSPORT_CELLULAR")
-            return true
-        } else if (capabilities.hasTransport(NetworkCapabilities.TRANSPORT_WIFI)) {
-            Log.i("Internet", "NetworkCapabilities.TRANSPORT_WIFI")
-            return true
-        } else if (capabilities.hasTransport(NetworkCapabilities.TRANSPORT_ETHERNET)) {
-            Log.i("Internet", "NetworkCapabilities.TRANSPORT_ETHERNET")
-            return true
-        }
-        return false
+//        val connectivityManager =
+//            application.getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager?
+//        val capabilities =
+//            connectivityManager!!.getNetworkCapabilities(connectivityManager.activeNetwork)
+//
+//        if (capabilities!!.hasTransport(NetworkCapabilities.TRANSPORT_CELLULAR)) {
+//            Log.i("Internet", "NetworkCapabilities.TRANSPORT_CELLULAR")
+//            return true
+//        } else if (capabilities.hasTransport(NetworkCapabilities.TRANSPORT_WIFI)) {
+//            Log.i("Internet", "NetworkCapabilities.TRANSPORT_WIFI")
+//            return true
+//        } else if (capabilities.hasTransport(NetworkCapabilities.TRANSPORT_ETHERNET)) {
+//            Log.i("Internet", "NetworkCapabilities.TRANSPORT_ETHERNET")
+//            return true
+//        }
+//        return false
+        return true;
     }
 }

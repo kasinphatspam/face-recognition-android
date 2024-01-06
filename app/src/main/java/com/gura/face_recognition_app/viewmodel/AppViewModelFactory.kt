@@ -27,6 +27,12 @@ class AppViewModelFactory(private val application: Application) : ViewModelProvi
             return EncodeContactActivityViewModel(application) as T
         } else if (modelClass.isAssignableFrom(JoinOrganizationActivityViewModel::class.java)) {
             return JoinOrganizationActivityViewModel(application) as T
+        } else if (modelClass.isAssignableFrom(EmployeeActivityViewModel::class.java)) {
+            return EmployeeActivityViewModel(application) as T
+        } else if (modelClass.isAssignableFrom(ProfileActivityViewModel::class.java)) {
+            return ProfileActivityViewModel(application) as T
+        } else if (modelClass.isAssignableFrom(HistoryActivityViewModel::class.java)) {
+            return HistoryActivityViewModel() as T
         }
         throw IllegalArgumentException("UnknownViewModel")
     }

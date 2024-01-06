@@ -5,6 +5,7 @@ import android.util.Log
 import com.google.android.gms.common.internal.service.Common
 import com.gura.face_recognition_app.App
 import com.gura.face_recognition_app.data.api.BackendAPI
+import com.gura.face_recognition_app.data.model.User
 import com.gura.face_recognition_app.data.request.LoginRequest
 import com.gura.face_recognition_app.data.request.RegisterRequest
 import com.gura.face_recognition_app.data.response.LoginResponse
@@ -20,39 +21,37 @@ class AuthRepository(val context: Context) {
     private val api = RetrofitHelper.getInstance(context).create(BackendAPI::class.java)
 
     interface AuthLoginInterface {
-        fun onResponse(response: Response<LoginResponse>)
+        fun onResponse(response: LoginResponse)
         fun onFailure(error: String)
     }
 
     interface AuthRegisterInterface {
-        fun onResponse(response: Response<RegisterResponse>)
+        fun onSuccess(response: RegisterResponse)
         fun onFailure(error: String)
     }
 
-    fun currentUser(): Int {
-        val preferences = SharePreferencesHelper(context).getInstance()
-        if (preferences.getInt("userId", -1) != -1) {
-            return preferences.getInt("userId", -1)
-        }
-        return -1
+    interface AuthMeInterface {
+        fun onSuccess(user: User)
+        fun onFailure()
     }
 
-    fun updateUserId(userId: Int) {
-        // Set userId into Global variable on Application Class
-        val app = App.instance
-        app.userId = userId
-        // Saving userId into Share Preferences
-        val preferences = SharePreferencesHelper(context).getInstance()
-        preferences.edit().putInt("userId", userId).apply()
+    suspend fun currentUser(session: String, listener: AuthMeInterface) {
+        val headers = HashMap<String, String>()
+        headers["session"] = session
+        val response = api.me(headers)
+
+        if (response.isSuccessful) {
+            listener.onSuccess(response.body()!!)
+            return
+        }
+        listener.onFailure()
     }
 
     suspend fun login(data: LoginRequest, listener: AuthLoginInterface) {
         val response = api.login(data)
 
         if (response!!.isSuccessful) {
-            updateUserId(response.body()!!.id)
-            Log.e("Auth", "Set user id ${response.body()}")
-            listener.onResponse(response)
+            listener.onResponse(response.body()!!)
             return
         }
         val errorBody = response.errorBody()!!.string()
@@ -64,7 +63,7 @@ class AuthRepository(val context: Context) {
         val response = api.register(data)
 
         if (response!!.isSuccessful) {
-            listener.onResponse(response)
+            listener.onSuccess(response.body()!!)
             return
         }
         val errorBody = response.errorBody()!!.string()

@@ -1,6 +1,7 @@
 package com.gura.face_recognition_app.repository
 
 import android.content.Context
+import android.util.Log
 import com.gura.face_recognition_app.data.api.BackendAPI
 import com.gura.face_recognition_app.helper.MLRetrofitHelper
 import com.gura.face_recognition_app.helper.RetrofitHelper
@@ -28,6 +29,7 @@ class ConnectionRepository(val context: Context) {
         val response = backendAPI.checkServerStatus()
         response.enqueue(object: Callback<ServerStatus> {
             override fun onResponse(call: Call<ServerStatus>, response: Response<ServerStatus>) {
+                Log.e("SplashActivity", response.body().toString())
                 if(response.isSuccessful){
                     listener.onConnected()
                 }else{

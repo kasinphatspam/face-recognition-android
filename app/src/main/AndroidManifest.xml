@@ -21,7 +21,15 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.Facerecognitionapp"
         android:usesCleartextTraffic="true">
-
+        <activity
+            android:name=".view.activity.ProfileActivity"
+            android:exported="false" />
+        <activity
+            android:name=".view.activity.HistoryActivity"
+            android:exported="false" />
+        <activity
+            android:name=".view.activity.EmployeeActivity"
+            android:exported="false" />
         <activity
             android:name=".view.activity.EncodeContactActivity"
             android:exported="false" />

@@ -22,7 +22,7 @@ data class User (
     @SerializedName("image")
     var image: String,
     @SerializedName("organization")
-    var organization: Organization,
+    var organization: Organization?,
     @SerializedName("role")
-    var role: Role
+    var role: Role?
 )

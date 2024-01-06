@@ -134,7 +134,7 @@ class RealtimeCameraActivity : AppCompatActivity() {
                     // Get image bitmap on text view
                     val bitmap = textureView.bitmap!!
                     val image = viewModel.resizeImage(bitmap)
-
+                    Log.d("Detector","********************")
                     detector.process(image)
                         .addOnSuccessListener { faces ->
                             if(faces != null) {

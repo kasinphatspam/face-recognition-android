@@ -67,12 +67,9 @@ class RegisterActivity : AppCompatActivity() {
             val lastname = name[1]
             val personalId = personalIdEditText.text.toString()
 
-            // Create a data object for registration
-            val data = RegisterRequest(email, password, firstname, lastname, personalId)
-
             // Use a coroutine for registration
             lifecycleScope.launch {
-                viewModel.register(data)
+                viewModel.register(email, password, firstname, lastname, personalId)
             }
         }
 

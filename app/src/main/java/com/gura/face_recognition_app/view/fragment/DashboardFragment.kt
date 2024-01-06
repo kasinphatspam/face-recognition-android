@@ -16,6 +16,10 @@ import androidx.fragment.app.activityViewModels
 import androidx.lifecycle.lifecycleScope
 import com.gura.face_recognition_app.R
 import com.gura.face_recognition_app.SettingActivity
+import com.gura.face_recognition_app.view.activity.CameraActivity
+import com.gura.face_recognition_app.view.activity.EmployeeActivity
+import com.gura.face_recognition_app.view.activity.HistoryActivity
+import com.gura.face_recognition_app.view.activity.ProfileActivity
 import com.gura.face_recognition_app.view.activity.RealtimeCameraActivity
 import com.gura.face_recognition_app.viewmodel.ShareFragmentViewModel
 import com.squareup.picasso.Picasso
@@ -83,6 +87,11 @@ class DashboardFragment : Fragment() {
 
         }
 
+        profileCircleImageView.setOnClickListener {
+            val intent = Intent(context, ProfileActivity::class.java)
+            startActivity(intent)
+        }
+
         val startFaceRecognitionImageButton: ImageButton =
             view.findViewById(R.id.recognitionImageButton)
 
@@ -102,6 +111,16 @@ class DashboardFragment : Fragment() {
 
         settingImageButton.setOnClickListener {
             val intent = Intent(context, SettingActivity::class.java)
+            startActivity(intent)
+        }
+
+        employeeImageButton.setOnClickListener {
+            val intent = Intent(context, EmployeeActivity::class.java)
+            startActivity(intent)
+        }
+
+        historyImageButton.setOnClickListener {
+            val intent = Intent(context, HistoryActivity::class.java)
             startActivity(intent)
         }
     }

@@ -4,7 +4,7 @@ import com.google.gson.annotations.SerializedName
 import com.gura.face_recognition_app.data.model.Contact
 
 data class RecognitionRequest(
-    @SerializedName("imageBase64")
+    @SerializedName("image")
     var imageBase64: String
 )
 

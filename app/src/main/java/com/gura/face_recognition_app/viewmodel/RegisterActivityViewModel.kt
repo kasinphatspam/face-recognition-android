@@ -7,25 +7,30 @@ import com.gura.face_recognition_app.AuthCommand
 import com.gura.face_recognition_app.data.request.RegisterRequest
 import com.gura.face_recognition_app.data.response.RegisterResponse
 import com.gura.face_recognition_app.repository.AuthRepository
+import com.gura.face_recognition_app.services.AuthService
 import retrofit2.Response
 
 class RegisterActivityViewModel(val application: Application): ViewModel() {
 
-    private val authRepository = AuthRepository(application)
+    private val authService = AuthService(application)
     val command = MutableLiveData<AuthCommand>()
 
-    suspend fun register(data: RegisterRequest){
-        authRepository.register(data, listener)
-    }
-
-    private val listener = object: AuthRepository.AuthRegisterInterface {
-        override fun onResponse(response: Response<RegisterResponse>) {
-            authRepository.updateUserId(response.body()!!.user.id)
+    suspend fun register(email: String,
+                         password: String,
+                         firstname: String,
+                         lastname: String,
+                         personalId: String)
+    {
+        authService.register(email, password, firstname, lastname, personalId) {
+            success ->
+            if (success) {
+                command.apply {
+                    value = AuthCommand("AUTH_REGISTER_COMPLETED")
+                }
+            }
             command.apply {
-                value = AuthCommand("AUTH_REGISTER_COMPLETED")
+                value = AuthCommand("AUTH_REGISTER_FAILURE")
             }
         }
-
-        override fun onFailure(error: String) {}
     }
 }

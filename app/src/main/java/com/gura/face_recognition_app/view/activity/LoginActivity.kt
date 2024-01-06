@@ -3,6 +3,7 @@ package com.gura.face_recognition_app.view.activity
 import android.content.Intent
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
+import android.util.Log
 import android.widget.Button
 import android.widget.EditText
 import android.widget.Toast
@@ -10,6 +11,7 @@ import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
 import com.gura.face_recognition_app.R
 import com.gura.face_recognition_app.helper.WindowHelper
+import com.gura.face_recognition_app.services.AuthService
 import com.gura.face_recognition_app.viewmodel.AppViewModelFactory
 import com.gura.face_recognition_app.viewmodel.LoginActivityViewModel
 import kotlinx.coroutines.launch
@@ -46,6 +48,9 @@ class LoginActivity : AppCompatActivity() {
         loginButton = findViewById(R.id.loginButton)
         registerButton = findViewById(R.id.registerButton)
 
+        // testing service -- remove later
+        val authService = AuthService(this)
+
         // Handle login button click
         loginButton.setOnClickListener {
             val email = emailEditText.text.toString()
@@ -68,13 +73,13 @@ class LoginActivity : AppCompatActivity() {
             when (authCommand.cmd) {
                 "AUTH_LOGIN_COMPLETED" -> {
                     // If login is successful, navigate to the main activity
-                    val intent = Intent(this, MainActivity::class.java)
+                    val intent = Intent(this, SplashActivity::class.java)
                     finish()
                     startActivity(intent)
                 }
                 "AUTH_LOGIN_FAILED" -> {
                     // If login fails, show a toast message
-                    Toast.makeText(this, "Login failed", Toast.LENGTH_SHORT).show()
+                    Toast.makeText(this, "Username or password you entered incorrect.", Toast.LENGTH_SHORT).show()
                 }
             }
         }

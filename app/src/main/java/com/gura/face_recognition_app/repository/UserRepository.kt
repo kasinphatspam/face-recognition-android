@@ -30,13 +30,13 @@ class UserRepository(val context: Context) {
     // Get current user
     suspend fun loadCurrentUserAsync(listener: GetUserInterface) {
         val authRepository = AuthRepository(context)
-        val response = api.getUserById(authRepository.currentUser())
+//        val response = api.getUserById(authRepository.currentUser())
 
-        if (response.isSuccessful) {
-            listener.onResponse(response)
-            return
-        }
-        listener.onFailure(response.raw().message)
+//        if (response.isSuccessful) {
+//            listener.onResponse(response)
+//            return
+//        }
+//        listener.onFailure(response.raw().message)
     }
 
     // Get user data by id

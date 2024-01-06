@@ -5,6 +5,7 @@ import android.os.Bundle
 import android.view.View
 import android.view.inputmethod.InputMethodManager
 import android.widget.Button
+import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.widget.doOnTextChanged
 import androidx.lifecycle.ViewModelProvider
@@ -12,6 +13,7 @@ import androidx.lifecycle.lifecycleScope
 import com.chaos.view.PinView
 import com.gura.face_recognition_app.R
 import com.gura.face_recognition_app.helper.WindowHelper
+import com.gura.face_recognition_app.services.AuthService
 import com.gura.face_recognition_app.viewmodel.AppViewModelFactory
 import com.gura.face_recognition_app.viewmodel.JoinOrganizationActivityViewModel
 import kotlinx.coroutines.launch
@@ -19,6 +21,7 @@ import kotlinx.coroutines.launch
 class JoinOrganizationActivity : AppCompatActivity() {
     private lateinit var passcodePinView: PinView
     private lateinit var confirmButton: Button
+    private lateinit var logoutButton: Button
     private lateinit var factory: AppViewModelFactory
     private lateinit var viewModel: JoinOrganizationActivityViewModel
 
@@ -37,6 +40,7 @@ class JoinOrganizationActivity : AppCompatActivity() {
         viewModel = ViewModelProvider(this, factory)[JoinOrganizationActivityViewModel::class.java]
         passcodePinView = findViewById(R.id.passcodePinView)
         confirmButton = findViewById(R.id.confirmButton)
+        logoutButton = findViewById(R.id.backButton)
         confirmButton.visibility = View.INVISIBLE
 
         // Listen for changes in the pin input field
@@ -54,12 +58,42 @@ class JoinOrganizationActivity : AppCompatActivity() {
             commit(passcodePinView.text.toString())
         }
 
+        logoutButton.setOnClickListener {
+            viewModel.logout()
+            val intent = Intent(this, LoginActivity::class.java)
+            startActivity(intent)
+            finish()
+        }
+
         // Observe ViewModel commands
         viewModel.cmd.observe(this) {
-            if (it.cmd == "JOIN_ORGANIZATION_SUCCESS") {
-                // Redirect to the main activity on success
-                val intent = Intent(this@JoinOrganizationActivity, MainActivity::class.java)
-                startActivity(intent)
+            when (it.cmd) {
+                "JOIN_ORGANIZATION_COMPLETED" -> {
+                    // Redirect to the main activity on success
+                    val intent = Intent(this@JoinOrganizationActivity, MainActivity::class.java)
+                    startActivity(intent)
+                }
+                "ALREADY_REQUEST_TO_THIS_ORGANIZATION" -> {
+                    Toast.makeText(
+                        this,
+                        "Already request to join this organization.",
+                        Toast.LENGTH_SHORT
+                    ).show()
+                }
+                "REQUEST_JOIN_SUCCESS" -> {
+                    Toast.makeText(
+                        this,
+                        "The request has been sent. Please wait for the admin to accept.",
+                        Toast.LENGTH_SHORT
+                    ).show()
+                }
+                "JOIN_ORGANIZATION_FAILURE" -> {
+                    Toast.makeText(
+                        this,
+                        "Passcode you entered incorrect.",
+                        Toast.LENGTH_SHORT
+                    ).show()
+                }
             }
         }
     }
